@@ -3,12 +3,20 @@
  */
 package com.example.Chat.app;
 
+import com.example.Chat.app.Admin.AdminUI;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
+    public void runSystem(){
+        // Create and display the AdminUI form
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new AdminUI().setVisible(true);
+            }
+        });
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        new App().runSystem();
     }
 }
