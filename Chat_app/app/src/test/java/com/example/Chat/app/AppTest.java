@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {
     @Test
-    void runSystemDoesNotThrow() {
-        App classUnderTest = new App();
-        assertDoesNotThrow(() -> classUnderTest.runSystem(), "runSystem should not throw any exceptions");
+    void mainDoesNotThrow() {
+        assertDoesNotThrow(() -> App.main(new String[]{}), "main should not throw any exceptions");
     }
 }
