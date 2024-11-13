@@ -4,7 +4,7 @@
 package com.example.Chat.app;
 
 import com.example.Chat.app.Admin.AdminUI;
-
+import com.example.Chat.app.Users.UserLogin;
 public class App {
     public void runSystem(){
         // Create and display the AdminUI form
@@ -17,6 +17,10 @@ public class App {
     }
 
     public static void main(String[] args) {
+        UserLogin LoginFrame =new UserLogin();
+        LoginFrame.setVisible(true);
+        LoginFrame.pack();
+        LoginFrame.setLocationRelativeTo(null);
         new App().runSystem();
     }
 }
