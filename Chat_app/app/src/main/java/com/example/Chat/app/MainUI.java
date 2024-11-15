@@ -2,6 +2,7 @@ package com.example.Chat.app;
 
 import com.example.Chat.app.Admin.AdminUI;
 import com.example.Chat.app.Users.UserLogin;
+import com.example.Chat.app.Users.UserUI;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +19,7 @@ public class MainUI extends JFrame {
         // Create buttons for Admin and User interfaces
         JButton adminButton = new JButton("Admin UI");
         JButton userButton = new JButton("User Login");
-
+        JButton userUIButton = new JButton ("User UI");
         // Set up action listeners
         adminButton.addActionListener(new ActionListener() {
             @Override
@@ -36,10 +37,19 @@ public class MainUI extends JFrame {
             }
         });
 
+        userUIButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new UserUI().setVisible(true);
+                dispose(); // Close the MainUI window
+            }
+        });
+
         // Set up the layout
         JPanel panel = new JPanel();
         panel.add(adminButton);
         panel.add(userButton);
+        panel.add(userUIButton);
         add(panel);
     }
 }
