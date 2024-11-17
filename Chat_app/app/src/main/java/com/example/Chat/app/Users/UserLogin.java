@@ -85,7 +85,7 @@ public class UserLogin extends javax.swing.JFrame {
         jLabel1.setText("LOGIN");
 
         jLabel2.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
-        jLabel2.setText("Email");
+        jLabel2.setText("Username");
 
         jLabel3.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
         jLabel3.setText("Password");
@@ -190,10 +190,8 @@ public class UserLogin extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 101, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
-
-        getAccessibleContext().setAccessibleName("LOGIN");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
