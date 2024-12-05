@@ -3,6 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package com.example.Chat.app.Admin;
+import java.sql.*;
+import java.util.Vector;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -10,12 +15,84 @@ package com.example.Chat.app.Admin;
  */
 public class AdminUI extends javax.swing.JFrame {
 
+    private int selectedUserId = -1; // Initialize as no user selected
+
     /**
      * Creates new form TestUI
      */
     public AdminUI() {
         initComponents();
+        loadDataTable1(null);
     }
+
+    /**
+     * Establishes a connection to the database.
+     * 
+     * @return a Connection object or null if the connection fails
+     */
+    private Connection setupConnection() {
+        String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+        String DB_URL = "jdbc:mysql://localhost:3306/chat_app"; 
+        String USER = "root";
+        String PASSWORD = "hoang123";
+        try {
+            // Load JDBC driver
+            Class.forName(JDBC_DRIVER);
+            // Establish connection
+            return DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "JDBC Driver not found: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error connecting to database: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
+    }
+
+    // This method is for loading data with an optional query string.
+    private void loadDataTable1(String query) {
+        // If no query is passed, use the default query
+        if (query == null || query.isEmpty()) {
+            query = "SELECT user_id, fullname, username, address, birthday, gender, email FROM users";
+        }
+
+        try (Connection conn = setupConnection();
+            Statement stmt = conn != null ? conn.createStatement() : null;
+            ResultSet rs = stmt != null ? stmt.executeQuery(query) : null) {
+
+            if (rs == null) {
+                JOptionPane.showMessageDialog(this, "Failed to fetch data from the database.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Get the table model
+            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+
+            // Clear any existing data
+            model.setRowCount(0);
+
+            // Loop through the result set and populate the table
+            while (rs.next()) {
+                String id = rs.getString("user_id");
+                String name = rs.getString("fullname");
+                String username = rs.getString("username");
+                String address = rs.getString("address");
+                Date birthday = rs.getDate("birthday");
+                String gender = rs.getString("gender");
+                String email = rs.getString("email");
+
+                // Add data to table
+                model.addRow(new Object[] {id, name, username, address, birthday, gender, email });
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -134,33 +211,65 @@ public class AdminUI extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Name", "Username", "Address", "Birthday", "Gender", "Email"
+                "UserID", "Name", "Username", "Address", "Birthday", "Gender", "Email"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+                java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
         jScrollPane1.setViewportView(jTable1);
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = jTable1.getSelectedRow();
+                if (selectedRow >= 0) {
+                    // Assuming User ID is in the first column of the table
+                    Object userIdValue = jTable1.getValueAt(selectedRow, 0);
+                    if (userIdValue != null) {
+                        selectedUserId = Integer.parseInt(userIdValue.toString());
+                    } else {
+                        selectedUserId = -1; // Reset if User ID is not valid
+                    }
+                }
+            }
+        });
+        
 
         jButton7.setText("Add");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jButton8.setText("Update");
+        jButton8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton8ActionPerformed(evt);
+            }
+        });
 
         jButton9.setText("Delete");
         jButton9.addActionListener(new java.awt.event.ActionListener() {
@@ -198,8 +307,18 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
         jButton14.setText("Filter by");
+        jButton14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton14ActionPerformed(evt);
+            }
+        });
 
         jButton15.setText(" Sort by");
+        jButton15.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton15ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -208,6 +327,7 @@ public class AdminUI extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -216,7 +336,7 @@ public class AdminUI extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                                 .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
                                 .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -225,21 +345,17 @@ public class AdminUI extends javax.swing.JFrame {
                                 .addGap(98, 98, 98)
                                 .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jButton14)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(35, 35, 35)
-                                .addComponent(jButton15)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jButton14)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(35, 35, 35)
+                        .addComponent(jButton15)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField2)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -1002,25 +1118,489 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox2ActionPerformed
 
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        JTextField userIdField = new JTextField();
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JTextField emailField = new JTextField();
+        JTextField addressField = new JTextField();
+        JTextField fullnameField = new JTextField();
+        JTextField birthdayField = new JTextField();
+        JTextField genderField = new JTextField();
+        JTextField roleField = new JTextField();
+    
+        Object[] formFields = {
+            "User ID (Required):", userIdField,
+            "Username (Required):", usernameField,
+            "Password (Required):", passwordField,
+            "Email (Required):", emailField,
+            "Address:", addressField,
+            "Full Name:", fullnameField,
+            "Birthday (YYYY-MM-DD):", birthdayField,
+            "Gender (male/female):", genderField,
+            "Role (user/admin):", roleField
+        };
+    
+        int option = JOptionPane.showConfirmDialog(null, formFields, "Add New User", JOptionPane.OK_CANCEL_OPTION);
+    
+        if (option == JOptionPane.OK_OPTION) {
+            try (Connection conn = setupConnection()) {
+                if (conn == null) return;
+    
+                // Validate required fields
+                if (userIdField.getText().isEmpty() || usernameField.getText().isEmpty() ||
+                    passwordField.getPassword().length == 0 || emailField.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Please fill all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                // Validate numeric User ID
+                int userId;
+                try {
+                    userId = Integer.parseInt(userIdField.getText());
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(null, "User ID must be a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                // Validate password length
+                if (passwordField.getPassword().length > 20) {
+                    JOptionPane.showMessageDialog(null, "Password cannot exceed 20 characters.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                // Validate gender
+                String gender = genderField.getText().toLowerCase();
+                if (gender.isEmpty() || (!gender.equals("male") && !gender.equals("female"))) {
+                    JOptionPane.showMessageDialog(null, "Gender must be 'male' or 'female'.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                // Validate role
+                String role = roleField.getText().toLowerCase();
+                if (!role.equals("user") && !role.equals("admin") && !role.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Role must be 'user' or 'admin' (or leave blank).", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                // Validate birthday
+                if (!birthdayField.getText().isEmpty() && !birthdayField.getText().matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    JOptionPane.showMessageDialog(null, "Invalid birthday format. Please use YYYY-MM-DD.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                String query = "INSERT INTO users (user_id, username, password, email, address, fullname, birthday, gender, status, role, created_at, `lock`) " +
+               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'inactive', ?, NOW(), false)";
+
+    
+                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                    pstmt.setInt(1, userId);
+                    pstmt.setString(2, usernameField.getText());
+                    pstmt.setString(3, new String(passwordField.getPassword()));
+                    pstmt.setString(4, emailField.getText());
+                    pstmt.setString(5, addressField.getText().isEmpty() ? null : addressField.getText());
+                    pstmt.setString(6, fullnameField.getText().isEmpty() ? null : fullnameField.getText());
+                    pstmt.setDate(7, birthdayField.getText().isEmpty() ? null : Date.valueOf(birthdayField.getText()));
+                    pstmt.setString(8, gender);
+                    pstmt.setString(9, role);
+    
+                    int rowsAffected = pstmt.executeUpdate();
+                    if (rowsAffected > 0) {
+                        JOptionPane.showMessageDialog(null, "User added successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        loadDataTable1(null);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed to add user.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error adding user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+                 
+    
+    
+    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to update.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        try (Connection conn = setupConnection()) {
+            if (conn == null) return;
+    
+            // Fetch selected user's data
+            String query = "SELECT * FROM users WHERE user_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, selectedUserId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        // Prepare form without password field
+                        JTextField usernameField = new JTextField(rs.getString("username"));
+                        JTextField emailField = new JTextField(rs.getString("email"));
+                        JTextField addressField = new JTextField(rs.getString("address"));
+                        JTextField fullnameField = new JTextField(rs.getString("fullname"));
+                        JTextField birthdayField = new JTextField(rs.getString("birthday"));
+                        JTextField genderField = new JTextField(rs.getString("gender"));
+                        JTextField roleField = new JTextField(rs.getString("role"));
+    
+                        Object[] formFields = {
+                            "Username (Required):", usernameField,
+                            "Email (Required):", emailField,
+                            "Address:", addressField,
+                            "Full Name:", fullnameField,
+                            "Birthday (YYYY-MM-DD):", birthdayField,
+                            "Gender (male/female):", genderField,
+                            "Role (user/admin):", roleField
+                        };
+    
+                        int option = JOptionPane.showConfirmDialog(this, formFields, "Update User", JOptionPane.OK_CANCEL_OPTION);
+    
+                        if (option == JOptionPane.OK_OPTION) {
+                            // Update user details in the database, excluding password
+                            String updateQuery = "UPDATE users SET username = ?, email = ?, address = ?, fullname = ?, birthday = ?, gender = ?, role = ? WHERE user_id = ?";
+                            try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+                                updateStmt.setString(1, usernameField.getText());
+                                updateStmt.setString(2, emailField.getText());
+                                updateStmt.setString(3, addressField.getText().isEmpty() ? null : addressField.getText());
+                                updateStmt.setString(4, fullnameField.getText().isEmpty() ? null : fullnameField.getText());
+                                try {
+                                    updateStmt.setDate(5, birthdayField.getText().isEmpty() ? null : Date.valueOf(birthdayField.getText()));
+                                } catch (IllegalArgumentException e) {
+                                    JOptionPane.showMessageDialog(this, "Invalid birthday format. Please use YYYY-MM-DD.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                                    return;
+                                }
+                                updateStmt.setString(6, genderField.getText().isEmpty() ? null : genderField.getText());
+                                updateStmt.setString(7, roleField.getText().isEmpty() ? null : roleField.getText());
+                                updateStmt.setInt(8, selectedUserId);
+    
+                                int rowsAffected = updateStmt.executeUpdate();
+                                if (rowsAffected > 0) {
+                                    JOptionPane.showMessageDialog(this, "User updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                    loadDataTable1(null); // Refresh the table
+                                } else {
+                                    JOptionPane.showMessageDialog(this, "Failed to update user.", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        // TODO add your handling code here:
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        // Prompt for confirmation before deleting the user
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this user?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try (Connection conn = setupConnection()) {
+                if (conn == null) return;
+    
+                // Delete the user from the database
+                String deleteQuery = "DELETE FROM users WHERE user_id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
+                    pstmt.setInt(1, selectedUserId);
+    
+                    int rowsAffected = pstmt.executeUpdate();
+                    if (rowsAffected > 0) {
+                        JOptionPane.showMessageDialog(this, "User deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        loadDataTable1(null); // Refresh the table after deletion
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Failed to delete user.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error deleting user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_jButton9ActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton10ActionPerformed
+    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to update the password.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        try (Connection conn = setupConnection()) {
+            if (conn == null) return;
+    
+            // Fetch the current password of the selected user
+            String query = "SELECT password FROM users WHERE user_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, selectedUserId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        String oldPassword = rs.getString("password");
+    
+                        // Create text fields for old and new passwords
+                        JTextField oldPasswordField = new JTextField(20);
+                        oldPasswordField.setText(oldPassword); // Set the current password (editable for visibility)
+                        oldPasswordField.setEditable(false); // Make the old password field non-editable
+    
+                        JTextField newPasswordField = new JTextField(20); // New password field (editable)
+    
+                        // Create the dialog to show old and new password fields
+                        Object[] message = {
+                            "Old Password (Uneditable):", oldPasswordField,
+                            "New Password:", newPasswordField
+                        };
+    
+                        int option = JOptionPane.showConfirmDialog(this, message, "Update Password", JOptionPane.OK_CANCEL_OPTION);
+    
+                        if (option == JOptionPane.OK_OPTION) {
+                            // Get the new password entered by the user
+                            String newPassword = newPasswordField.getText(); // Use getText() for JTextField
+    
+                            // Check if the new password is empty
+                            if (newPassword.trim().isEmpty()) {
+                                JOptionPane.showMessageDialog(this, "Password cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+    
+                            // Proceed to update the password in the database
+                            String updatePasswordQuery = "UPDATE users SET password = ? WHERE user_id = ?";
+                            try (PreparedStatement updateStmt = conn.prepareStatement(updatePasswordQuery)) {
+                                updateStmt.setString(1, newPassword);
+                                updateStmt.setInt(2, selectedUserId);
+    
+                                int rowsAffected = updateStmt.executeUpdate();
+                                if (rowsAffected > 0) {
+                                    JOptionPane.showMessageDialog(this, "Password updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                } else {
+                                    JOptionPane.showMessageDialog(this, "Failed to update password.", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating password: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }                                         
 
-    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton11ActionPerformed
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to view login history.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton12ActionPerformed
+        try (Connection conn = setupConnection()) {
+            if (conn == null) return;
 
-    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
-        // TODO add your handling code here:
+            // Query to retrieve login history for the selected user
+            String query = "SELECT user_id, login_at FROM login_history WHERE user_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, selectedUserId);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    // Prepare data for JTable
+                    Vector<Vector<Object>> rowData = new Vector<>();
+                    Vector<String> columnNames = new Vector<>();
+                    columnNames.add("User ID");
+                    columnNames.add("Login Time");
+
+                    // Loop through the result set and populate the row data
+                    while (rs.next()) {
+                        Vector<Object> row = new Vector<>();
+                        row.add(rs.getInt("user_id"));
+                        row.add(rs.getDate("login_at"));
+                        rowData.add(row);
+                    }
+
+                    if (rowData.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "No login history found for this user.", "No History", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        // Create a JTable to display login history
+                        JTable loginHistoryTable = new JTable(rowData, columnNames);
+                        JScrollPane scrollPane = new JScrollPane(loginHistoryTable);
+
+                        // Display the table in a dialog
+                        JOptionPane.showMessageDialog(this, scrollPane, "Login History", JOptionPane.PLAIN_MESSAGE);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error fetching login history: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }                                         
+
+    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to view their friend list.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        try (Connection conn = setupConnection()) {
+            if (conn == null) return;
+    
+            // Query to get friends for the selected user
+            String query = "SELECT uf.friend_id, u.username, uf.friendship " +
+                           "FROM users_friend uf " +
+                           "JOIN users u ON uf.friend_id = u.user_id " +
+                           "WHERE uf.user_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, selectedUserId);
+    
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    // Prepare data for JTable
+                    Vector<Vector<Object>> rowData = new Vector<>();
+                    Vector<String> columnNames = new Vector<>();
+                    columnNames.add("Friend ID");
+                    columnNames.add("Username");
+                    columnNames.add("Friendship Status");
+    
+                    // Loop through the result set and populate the row data
+                    while (rs.next()) {
+                        Vector<Object> row = new Vector<>();
+                        row.add(rs.getInt("friend_id"));
+                        row.add(rs.getString("username"));
+                        row.add(rs.getString("friendship"));
+                        rowData.add(row);
+                    }
+    
+                    if (rowData.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "No friends found for this user.", "No Friends", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        // Create a JTable to display the friend list
+                        JTable friendListTable = new JTable(rowData, columnNames);
+                        JScrollPane scrollPane = new JScrollPane(friendListTable);
+    
+                        // Display the table in a dialog
+                        JOptionPane.showMessageDialog(this, scrollPane, "Friend List", JOptionPane.PLAIN_MESSAGE);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error fetching friend list: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }                                         
+
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Please select a user from the table.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        try {
+            // Assuming user_id is in the first column
+            Object userIdObject = jTable1.getValueAt(selectedRow, 0); 
+            int userId = Integer.parseInt(userIdObject.toString());
+    
+            // Assuming 'lock' is in a specific column index, e.g., column 4 (update this index as per your table structure)
+            int lockColumnIndex = 4; // Replace with the actual column index for 'lock'
+    
+            Object lockObject = jTable1.getValueAt(selectedRow, lockColumnIndex);
+            boolean currentLockStatus = Boolean.parseBoolean(lockObject.toString());
+    
+            // Toggle lock status
+            boolean newLockStatus = !currentLockStatus;
+    
+            // Update in database
+            try (Connection conn = setupConnection()) {
+                if (conn == null) return;
+    
+                String query = "UPDATE users SET `lock` = ? WHERE user_id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                    pstmt.setBoolean(1, newLockStatus);
+                    pstmt.setInt(2, userId);
+    
+                    int rowsAffected = pstmt.executeUpdate();
+                    if (rowsAffected > 0) {
+                        // Update the table view
+                        jTable1.setValueAt(newLockStatus, selectedRow, lockColumnIndex);
+    
+                        String statusMessage = newLockStatus ? "User locked successfully." : "User unlocked successfully.";
+                        JOptionPane.showMessageDialog(null, statusMessage, "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed to update user lock status.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid User ID format.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_jButton13ActionPerformed
+
+    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
+        String filterValue = jTextField1.getText().trim();  // Get the filter value from the text field
+        if (filterValue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a value to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        // Get selected filter option from combo box
+        String filterOption = (String) jComboBox1.getSelectedItem();
+    
+        String query = "";
+    
+        // Construct the SQL query based on the selected filter
+        switch (filterOption) {
+            case "Name":
+                query = "SELECT user_id, fullname, username, address, birthday, gender, email FROM users WHERE fullname LIKE '%" + filterValue + "%'";
+                break;
+            case "Username":
+                query = "SELECT user_id, fullname, username, address, birthday, gender, email FROM users WHERE username LIKE '%" + filterValue + "%'";
+                break;
+            case "State":
+                // Checking if the status is exactly 'active' or 'inactive'
+                if (filterValue.equalsIgnoreCase("active") || filterValue.equalsIgnoreCase("inactive")) {
+                    query = "SELECT user_id, fullname, username, address, birthday, gender, email FROM users WHERE status = '" + filterValue + "'";
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please enter either 'active' or 'inactive' in the state filter.", "Invalid Input", JOptionPane.WARNING_MESSAGE);
+                    return;  // Return if invalid input is provided for state
+                }
+                break; // Add this break to prevent falling through to the default case
+            default:
+                // Default case if no valid option is selected
+                JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+    
+        // Call the method to load data based on the filter
+        loadDataTable1(query);  // Pass the query with filter to load the data
+    }//GEN-LAST:event_jButton14ActionPerformed
+    
+
+    private void jButton15ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get the selected sorting criteria from the combo box
+        String sortBy = jComboBox2.getSelectedItem().toString();
+    
+        // Initialize the query string
+        String query = "SELECT user_id, fullname, username, address, birthday, gender, email FROM users";
+    
+        // Modify the query based on the selected sort criteria
+        if (sortBy.equals("Name")) {
+            query += " ORDER BY fullname";  // Sort by Name (fullname)
+        } else if (sortBy.equals("Account's create-time")) {
+            query += " ORDER BY created_at";  // Sort by Account's create-time (assuming you have a create_time column)
+        }
+    
+        // Load the sorted data into the table
+        loadDataTable1(query);
+    }//GEN-LAST:event_jButton15ActionPerformed
 
     private void jComboBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox3ActionPerformed
         // TODO add your handling code here:
