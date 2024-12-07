@@ -24,6 +24,17 @@ public class AdminUI extends javax.swing.JFrame {
     private String currentFilterQuery7 = "";  // Stores the current WHERE clause
     private String currentSortQuery7 = "";    // Stores the current ORDER BY clause  
 
+    //Signup List table 3
+    private String currentFilterQuery3 = "";  // Stores the current WHERE clause
+    private String currentSortQuery3 = "";    // Stores the current ORDER BY clause  
+    private String currentTimeFilterQuery3 = ""; // Hold time-based filter
+
+    //Group Chat List table 4
+    private int selectedGroupId = -1;
+    private String currentFilterQuery4 = "";  // Stores the current WHERE clause
+    private String currentSortQuery4 = "";    // Stores the current ORDER BY clause
+
+
     /**
      * Creates new form TestUI
      */
@@ -32,6 +43,8 @@ public class AdminUI extends javax.swing.JFrame {
         loadDataTable1();
         loadDataTable2(null);
         loadDataTable7();
+        loadDataTable3();
+        loadDataTable4();
     }
 
     /**
@@ -212,6 +225,113 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
+    private void loadDataTable3() {
+        // Base SQL query to fetch the sign-up list
+        String query = """
+            SELECT created_at, username, fullname 
+            FROM users
+            """;
+    
+        // Append the current filter query (WHERE clause) if it exists
+        if (!currentFilterQuery3.isEmpty()) {
+            query += " " + currentFilterQuery3;
+        }
+        
+        // Append the time filter query if it exists
+        if (!currentTimeFilterQuery3.isEmpty()) {
+            if (query.contains("WHERE")) {
+                query += " AND " + currentTimeFilterQuery3.substring(6); // Remove "WHERE" from time filter query
+            } else {
+                query += " " + currentTimeFilterQuery3;
+            }
+        }
+    
+        // Append the current sort query (ORDER BY clause) if it exists
+        if (!currentSortQuery3.isEmpty()) {
+            query += " " + currentSortQuery3;
+        } else {
+            query += " ORDER BY created_at ASC"; // Default sorting
+        }
+    
+        try (Connection conn = setupConnection();
+             Statement stmt = conn != null ? conn.createStatement() : null;
+             ResultSet rs = stmt != null ? stmt.executeQuery(query) : null) {
+    
+            if (rs == null) {
+                JOptionPane.showMessageDialog(this, "Failed to fetch data from the database.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            // Get the table model for jTable3
+            DefaultTableModel model = (DefaultTableModel) jTable3.getModel();
+    
+            // Clear any existing data in the table
+            model.setRowCount(0);
+    
+            // Populate the table with the result set data
+            while (rs.next()) {
+                String createdAt = rs.getString("created_at");
+                String username = rs.getString("username");
+                String fullname = rs.getString("fullname");
+    
+                model.addRow(new Object[]{createdAt, username, fullname});
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void loadDataTable4() {
+        // Base SQL query to fetch the sign-up list
+        String query = """
+            SELECT created_at, group_id, group_name
+            FROM chat_group
+            """;
+    
+        // Append the current filter query (WHERE clause) if it exists
+        if (!currentFilterQuery4.isEmpty()) {
+            query += " " + currentFilterQuery4;
+        }
+    
+        // Append the current sort query (ORDER BY clause) if it exists
+        if (!currentSortQuery4.isEmpty()) {
+            query += " " + currentSortQuery4;
+        } else {
+            query += " ORDER BY created_at ASC"; // Default sorting
+        }
+    
+        try (Connection conn = setupConnection();
+             Statement stmt = conn != null ? conn.createStatement() : null;
+             ResultSet rs = stmt != null ? stmt.executeQuery(query) : null) {
+    
+            if (rs == null) {
+                JOptionPane.showMessageDialog(this, "Failed to fetch data from the database.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            // Get the table model for jTable3
+            DefaultTableModel model = (DefaultTableModel) jTable4.getModel();
+    
+            // Clear any existing data in the table
+            model.setRowCount(0);
+    
+            // Populate the table with the result set data
+            while (rs.next()) {
+                String createdAt = rs.getString("created_at");
+                String GroupId = rs.getString("group_id");
+                String GroupName = rs.getString("group_name");
+    
+                model.addRow(new Object[]{createdAt, GroupId, GroupName});
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
 
 
 
@@ -371,7 +491,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        
+
         jButton7.setText("Add");
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -665,6 +785,11 @@ public class AdminUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("LoginList", jPanel2);
 
         jButton17.setText("Filter by");
+        jButton17.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton17ActionPerformed(evt);
+            }
+        });
 
         jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name" }));
         jComboBox4.addActionListener(new java.awt.event.ActionListener() {
@@ -674,6 +799,12 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
         jButton18.setText(" Sort by");
+        jButton18.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton18ActionPerformed(evt);
+            }
+        });
+
 
         jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Account's create-time" }));
         jComboBox5.addActionListener(new java.awt.event.ActionListener() {
@@ -747,18 +878,16 @@ public class AdminUI extends javax.swing.JFrame {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(jButton19)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(55, 55, 55)
+                                    .addComponent(jButton19)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(43, 43, 43)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(19, 19, 19)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jButton17)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -799,6 +928,12 @@ public class AdminUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("SignUpList", jPanel3);
 
         jButton20.setText("Filter by");
+        jButton20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton20ActionPerformed(evt);
+            }
+        });
+        
 
         jComboBox6.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name" }));
         jComboBox6.addActionListener(new java.awt.event.ActionListener() {
@@ -808,6 +943,11 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
         jButton21.setText(" Sort by");
+        jButton21.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton21ActionPerformed(evt);
+            }
+        });
 
         jComboBox7.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Account's create-time" }));
         jComboBox7.addActionListener(new java.awt.event.ActionListener() {
@@ -841,6 +981,19 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
         jScrollPane4.setViewportView(jTable4);
+        jTable4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = jTable4.getSelectedRow();
+                if (selectedRow >= 0) {
+                    Object groupIdValue = jTable4.getValueAt(selectedRow, 1); // Adjust index as needed
+                    if (groupIdValue != null) {
+                        selectedGroupId = Integer.parseInt(groupIdValue.toString());
+                    } else {
+                        selectedGroupId = -1; // Reset if group_id is not valid
+                    }
+                }
+            }
+        });
 
         jButton22.setText("Group's User List");
         jButton22.addActionListener(new java.awt.event.ActionListener() {
@@ -1081,36 +1234,36 @@ public class AdminUI extends javax.swing.JFrame {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                         .addComponent(jButton29)
-                        .addGap(39, 39, 39)
-                        .addComponent(jTextField14, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(77, 77, 77)
+                        .addComponent(jTextField14, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addGroup(jPanel7Layout.createSequentialGroup()
-                                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(34, 34, 34)
+                                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(47, 47, 47))
+                                        .addGap(9, 9, 9))
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
                                         .addComponent(jButton27)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jComboBox10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel7Layout.createSequentialGroup()
-                                        .addGap(77, 77, 77)
-                                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addGroup(jPanel7Layout.createSequentialGroup()
                                         .addGap(6, 6, 6)
                                         .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jButton28)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jComboBox11, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addComponent(jComboBox11, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel7Layout.createSequentialGroup()
+                                        .addGap(127, 127, 127)
+                                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE))))
                             .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE))
                         .addContainerGap())))
         );
@@ -1768,7 +1921,262 @@ public class AdminUI extends javax.swing.JFrame {
         loadDataTable2(query);  // Pass the query with filter to load the data
     }
       
+    //SignUp List Table 3
 
+    private void jButton17ActionPerformed(java.awt.event.ActionEvent evt) {
+        String filterValue = jTextField4.getText().trim(); // Get the filter value from the text field
+        if (filterValue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a value to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            currentFilterQuery3 = ""; // Clear the filter query if input is empty
+            loadDataTable3(); // Reload without any filter
+            return;
+        }
+    
+        // Get selected filter option from combo box
+        String filterOption = (String) jComboBox4.getSelectedItem();
+    
+        // Construct the WHERE clause based on the selected filter
+        switch (filterOption) {
+            case "Name":
+                currentFilterQuery3 = "WHERE fullname LIKE '%" + filterValue + "%'";
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+    
+        // Reload the data with the updated filter and current sort
+        loadDataTable3();
+    }
+    
+
+    private void jButton18ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get the selected sorting criteria from the combo box
+        String sortBy = jComboBox5.getSelectedItem().toString();
+    
+        // Construct the ORDER BY clause based on the selected sort criteria
+        if (sortBy.equals("Name")) {
+            currentSortQuery3 = "ORDER BY fullname";  // Sort by full name
+        } else if (sortBy.equals("Account's create-time")) {
+            currentSortQuery3 = "ORDER BY created_at";  // Sort by account's create-time
+        } else {
+            currentSortQuery3 = "";  // Clear the sort query if no valid option is selected
+        }
+    
+        // Reload the data with the current filter and updated sort
+        loadDataTable3();
+    }    
+
+    private boolean isValidDateOrTimestamp(String value) {
+        // Regex for date in YYYY-MM-DD format
+        if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return true;
+        }
+        // Regex for full timestamp in YYYY-MM-DD HH:MM:SS format
+        if (value.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+            return true;
+        }
+        return false;
+    }    
+
+    private void jButton19ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Retrieve the time values from the text fields
+        String time1 = jTextField6.getText().trim(); // Time1
+        String time2 = jTextField7.getText().trim(); // Time2
+    
+        // Validate the inputs (ensure they are not empty)
+        if (time1.isEmpty() || time2.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter both Time1 and Time2.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        // Validate the format of the time inputs
+        if (!(isValidDateOrTimestamp(time1) && isValidDateOrTimestamp(time2))) {
+            JOptionPane.showMessageDialog(this, 
+                    "Invalid time format. Use either YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.", 
+                    "Invalid Input", 
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        // Construct the time filter query based on the time range
+        if (time1.matches("\\d{4}-\\d{2}-\\d{2}") && time2.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            // Both inputs are dates (YYYY-MM-DD)
+            currentTimeFilterQuery3 = "WHERE DATE(created_at) BETWEEN '" + time1 + "' AND '" + time2 + "'";
+        } else {
+            // At least one input is a full timestamp (YYYY-MM-DD HH:MM:SS)
+            currentTimeFilterQuery3 = "WHERE created_at BETWEEN '" + time1 + "' AND '" + time2 + "'";
+        }
+    
+        // Reload the data table with the updated filter
+        loadDataTable3();
+    }
+
+
+    //GroupChat List table 4
+
+    private void jButton20ActionPerformed(java.awt.event.ActionEvent evt) {
+        String filterValue = jTextField8.getText().trim(); // Get the filter value from the text field
+        if (filterValue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a value to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            currentFilterQuery4 = ""; // Clear the filter query if input is empty
+            loadDataTable4(); // Reload without any filter
+            return;
+        }
+    
+        // Get selected filter option from combo box
+        String filterOption = (String) jComboBox6.getSelectedItem();
+    
+        // Construct the WHERE clause based on the selected filter
+        switch (filterOption) {
+            case "Name":
+                currentFilterQuery4 = "WHERE group_name LIKE '%" + filterValue + "%'";
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+    
+        // Reload the data with the updated filter and current sort
+        loadDataTable4();
+    }
+    
+
+    private void jButton21ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get the selected sorting criteria from the combo box
+        String sortBy = jComboBox7.getSelectedItem().toString();
+    
+        // Construct the ORDER BY clause based on the selected sort criteria
+        if (sortBy.equals("Name")) {
+            currentSortQuery4 = "ORDER BY group_name";  // Sort by full name
+        } else if (sortBy.equals("Account's create-time")) {
+            currentSortQuery4 = "ORDER BY created_at";  // Sort by account's create-time
+        } else {
+            currentSortQuery4 = "";  // Clear the sort query if no valid option is selected
+        }
+    
+        // Reload the data with the current filter and updated sort
+        loadDataTable4();
+    }
+
+    private void jButton22ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedGroupId == -1) {
+            JOptionPane.showMessageDialog(null, "Please select a group from the table.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        String query = "SELECT group_members.group_id, chat_group.group_name, " +
+                       "users.user_id, users.username, users.fullname " +
+                       "FROM group_members " +
+                       "JOIN users ON group_members.user_id = users.user_id " +
+                       "JOIN chat_group ON group_members.group_id = chat_group.group_id " +
+                       "WHERE group_members.group_id = ?";
+    
+        try (Connection conn = setupConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, selectedGroupId);
+    
+            try (ResultSet rs = stmt.executeQuery()) {
+                DefaultTableModel model = new DefaultTableModel();
+                model.addColumn("User ID");
+                model.addColumn("Username");
+                model.addColumn("Fullname");
+    
+                String groupName = "";
+                boolean firstRow = true;
+                while (rs.next()) {
+                    if (firstRow) {
+                        groupName = rs.getString("group_name");
+                        firstRow = false;
+                    }
+                    int userId = rs.getInt("user_id");
+                    String username = rs.getString("username");
+                    String fullname = rs.getString("fullname");
+                    model.addRow(new Object[]{userId, username, fullname});
+                }
+    
+                JTable table = new JTable(model);
+                JScrollPane scrollPane = new JScrollPane(table);
+    
+                JDialog dialog = new JDialog();
+                dialog.setTitle("Group's User List - " + groupName);
+                dialog.setSize(600, 400);
+                dialog.add(scrollPane);
+                dialog.setLocationRelativeTo(null);
+                dialog.setVisible(true);
+    
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error fetching group members: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+    
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Database connection error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void jButton23ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Check if a valid group ID is selected
+        if (selectedGroupId == -1) {
+            JOptionPane.showMessageDialog(null, "Please select a group from the table.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        // SQL query to fetch group admins
+        String query = "SELECT group_members.group_id, chat_group.group_name, " +
+                       "users.user_id, users.username, users.fullname " +
+                       "FROM group_members " +
+                       "JOIN users ON group_members.user_id = users.user_id " +
+                       "JOIN chat_group ON group_members.group_id = chat_group.group_id " +
+                       "WHERE group_members.group_id = ? AND group_members.is_admin = 'yes'";
+    
+        try (Connection conn = setupConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, selectedGroupId); // Set the selected group ID
+    
+            try (ResultSet rs = stmt.executeQuery()) {
+                DefaultTableModel model = new DefaultTableModel();
+                model.addColumn("User ID");
+                model.addColumn("Username");
+                model.addColumn("Fullname");
+    
+                String groupName = "";
+                boolean firstRow = true;
+                while (rs.next()) {
+                    if (firstRow) {
+                        groupName = rs.getString("group_name");
+                        firstRow = false;
+                    }
+                    int userId = rs.getInt("user_id");
+                    String username = rs.getString("username");
+                    String fullname = rs.getString("fullname");
+                    model.addRow(new Object[]{userId, username, fullname});
+                }
+    
+                // If no admins are found, show a message and return
+                if (model.getRowCount() == 0) {
+                    JOptionPane.showMessageDialog(null, "No admins found for the selected group.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+    
+                JTable table = new JTable(model);
+                JScrollPane scrollPane = new JScrollPane(table);
+    
+                JDialog dialog = new JDialog();
+                dialog.setTitle("Group's Admin List - " + groupName);
+                dialog.setSize(600, 400);
+                dialog.add(scrollPane);
+                dialog.setLocationRelativeTo(null); // Center the dialog
+                dialog.setVisible(true);
+    
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error fetching group admins: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+    
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Database connection error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
 
     private void jComboBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox3ActionPerformed
         // TODO add your handling code here:
@@ -1790,9 +2198,6 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField7ActionPerformed
 
-    private void jButton19ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton19ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton19ActionPerformed
 
     private void jComboBox6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox6ActionPerformed
         // TODO add your handling code here:
@@ -1802,13 +2207,6 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox7ActionPerformed
 
-    private void jButton22ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton22ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton22ActionPerformed
-
-    private void jButton23ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton23ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton23ActionPerformed
 
     private void jComboBox8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox8ActionPerformed
         // TODO add your handling code here:
