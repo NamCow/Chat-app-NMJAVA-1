@@ -34,6 +34,11 @@ public class AdminUI extends javax.swing.JFrame {
     private String currentFilterQuery4 = "";  // Stores the current WHERE clause
     private String currentSortQuery4 = "";    // Stores the current ORDER BY clause
 
+    //SpamList table 5
+    private int selectedReportId = -1;
+    private String currentFilterQuery5 = "";  // Stores the current WHERE clause
+    private String currentSortQuery5 = "";
+
 
     /**
      * Creates new form TestUI
@@ -45,6 +50,7 @@ public class AdminUI extends javax.swing.JFrame {
         loadDataTable7();
         loadDataTable3();
         loadDataTable4();
+        loadDataTable5();
     }
 
     /**
@@ -329,6 +335,47 @@ public class AdminUI extends javax.swing.JFrame {
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void loadDataTable5() {
+        // SQL query to retrieve report details for reported users
+        String query = "SELECT spam_list.report_at,spam_list.report_id, users.username, users.fullname " +
+                       "FROM spam_list " +
+                       "JOIN users ON spam_list.report_user = users.user_id";
+
+        // Append the current filter query (WHERE clause) if it exists
+        if (!currentFilterQuery5.isEmpty()) {
+            query += " " + currentFilterQuery5;
+        }
+    
+        // Append the current sort query (ORDER BY clause) if it exists
+        if (!currentSortQuery5.isEmpty()) {
+            query += " " + currentSortQuery5;
+        } else {
+            query += " ORDER BY created_at ASC"; // Default sorting
+        }
+    
+        try (Connection conn = setupConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+    
+            // Create a DefaultTableModel for jTable5
+            DefaultTableModel model = (DefaultTableModel) jTable5.getModel();
+            model.setRowCount(0); // Clear existing data
+    
+            // Populate the table model with data from the result set
+            while (rs.next()) {
+                String reportTime = rs.getString("report_at");
+                String spamId = rs.getString("report_id");
+                String username = rs.getString("username");
+                String fullname = rs.getString("fullname");
+                model.addRow(new Object[]{reportTime,spamId, username, fullname});
+            }
+    
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error loading spam report data: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -933,7 +980,7 @@ public class AdminUI extends javax.swing.JFrame {
                 jButton20ActionPerformed(evt);
             }
         });
-        
+
 
         jComboBox6.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name" }));
         jComboBox6.addActionListener(new java.awt.event.ActionListener() {
@@ -1057,6 +1104,11 @@ public class AdminUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("GroupChatList", jPanel4);
 
         jButton24.setText("Filter by");
+        jButton24.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton24ActionPerformed(evt);
+            }
+        });
 
         jComboBox8.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Time", "Username" }));
         jComboBox8.addActionListener(new java.awt.event.ActionListener() {
@@ -1066,6 +1118,11 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
         jButton25.setText(" Sort by");
+        jButton25.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton25ActionPerformed(evt);
+            }
+        });
 
         jComboBox9.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Time", "Username" }));
         jComboBox9.addActionListener(new java.awt.event.ActionListener() {
@@ -1076,29 +1133,50 @@ public class AdminUI extends javax.swing.JFrame {
 
         jTable5.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Time", "Username", "Name"
+                "Time", "Spam_Id", "Username", "Name"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
         jScrollPane5.setViewportView(jTable5);
+        jTable5.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = jTable5.getSelectedRow();
+                if (selectedRow >= 0) {
+                    // Assuming User ID is in the first column of the table
+                    Object reportIdValue = jTable5.getValueAt(selectedRow, 1);
+                    if (reportIdValue != null) {
+                        selectedReportId = Integer.parseInt(reportIdValue.toString());
+                    } else {
+                        selectedReportId = -1; // Reset if User ID is not valid
+                    }
+                }
+            }
+        });
 
         jButton26.setText("Lock user's account");
         jButton26.addActionListener(new java.awt.event.ActionListener() {
@@ -1754,55 +1832,48 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }                                         
 
-    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        int selectedRow = jTable1.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(null, "Please select a user from the table.", "Error", JOptionPane.ERROR_MESSAGE);
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user from the table.", "No Selection", JOptionPane.WARNING_MESSAGE);
             return;
         }
     
-        try {
-            // Assuming user_id is in the first column
-            Object userIdObject = jTable1.getValueAt(selectedRow, 0); 
-            int userId = Integer.parseInt(userIdObject.toString());
+        String queryCheckLock = "SELECT `lock` FROM users WHERE user_id = ?";
+        String queryToggleLock = "UPDATE users SET `lock` = NOT `lock` WHERE user_id = ?"; // This toggles the lock value (0 -> 1, 1 -> 0)
     
-            // Assuming 'lock' is in a specific column index, e.g., column 4 (update this index as per your table structure)
-            int lockColumnIndex = 4; // Replace with the actual column index for 'lock'
+        try (Connection conn = setupConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(queryCheckLock);
+             PreparedStatement toggleStmt = conn.prepareStatement(queryToggleLock)) {
     
-            Object lockObject = jTable1.getValueAt(selectedRow, lockColumnIndex);
-            boolean currentLockStatus = Boolean.parseBoolean(lockObject.toString());
+            // Check the current lock status of the user
+            checkStmt.setInt(1, selectedUserId);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    boolean isLocked = rs.getBoolean("lock");
     
-            // Toggle lock status
-            boolean newLockStatus = !currentLockStatus;
-    
-            // Update in database
-            try (Connection conn = setupConnection()) {
-                if (conn == null) return;
-    
-                String query = "UPDATE users SET `lock` = ? WHERE user_id = ?";
-                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                    pstmt.setBoolean(1, newLockStatus);
-                    pstmt.setInt(2, userId);
-    
-                    int rowsAffected = pstmt.executeUpdate();
+                    // Perform the toggle (lock -> unlock or unlock -> lock)
+                    toggleStmt.setInt(1, selectedUserId);
+                    int rowsAffected = toggleStmt.executeUpdate();
                     if (rowsAffected > 0) {
-                        // Update the table view
-                        jTable1.setValueAt(newLockStatus, selectedRow, lockColumnIndex);
-    
-                        String statusMessage = newLockStatus ? "User locked successfully." : "User unlocked successfully.";
-                        JOptionPane.showMessageDialog(null, statusMessage, "Success", JOptionPane.INFORMATION_MESSAGE);
+                        // Show success message based on the current lock status
+                        if (isLocked) {
+                            JOptionPane.showMessageDialog(this, "User account has been successfully Unlocked.", "Success UnLock", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(this, "User account has been successfully Locked.", "Success Lock", JOptionPane.INFORMATION_MESSAGE);
+                        }
                     } else {
-                        JOptionPane.showMessageDialog(null, "Failed to update user lock status.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Failed to toggle the lock status. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
+                } else {
+                    JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Invalid User ID format.", "Error", JOptionPane.ERROR_MESSAGE);
+    
         } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error occurred while toggling the lock status: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }                                         
+    } 
+                                             
 
     private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
         String filterValue = jTextField1.getText().trim();  // Get the filter value from the text field
@@ -2177,6 +2248,126 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
+    //SpamList table 5
+
+    private void jButton24ActionPerformed(java.awt.event.ActionEvent evt) {
+        String filterValue = jTextField10.getText().trim(); // Get the filter value from the text field
+        if (filterValue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a value to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            currentFilterQuery5 = ""; // Clear the filter query if input is empty
+            loadDataTable5(); // Reload without any filter
+            return;
+        }
+    
+        // Get selected filter option from combo box
+        String filterOption = (String) jComboBox8.getSelectedItem();
+    
+        // Construct the WHERE clause based on the selected filter
+        switch (filterOption) {
+            case "Time":
+                if (filterValue.matches("\\d{4}-\\d{2}-\\d{2}")) { // Check for date in YYYY-MM-DD format
+                    currentFilterQuery5 = "WHERE DATE(spam_list.report_at) = '" + filterValue + "'";
+                } else if (filterValue.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) { // Check for timestamp
+                    currentFilterQuery5 = "WHERE spam_list.report_at = '" + filterValue + "'";
+                } else {
+                    JOptionPane.showMessageDialog(this, 
+                            "Please enter a valid date (YYYY-MM-DD) or timestamp (YYYY-MM-DD HH:MM:SS) for the Time filter.", 
+                            "Invalid Input", 
+                            JOptionPane.WARNING_MESSAGE);
+                    return; // Return if invalid input is provided for Time
+                }
+                break;
+            case "Username":
+                currentFilterQuery5 = "WHERE users.username LIKE '%" + filterValue + "%'";
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+    
+        // Reload the data with the updated filter and current sort
+        loadDataTable5();
+    }
+    
+
+    private void jButton25ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get the selected sorting criteria from the combo box
+        String sortBy = jComboBox9.getSelectedItem().toString();
+    
+        // Construct the ORDER BY clause based on the selected sort criteria
+        switch (sortBy) {
+            case "Username":
+                currentSortQuery5 = "ORDER BY users.username";
+                break;
+            case "Time":
+                currentSortQuery5 = "ORDER BY spam_list.report_at";
+                break;
+            default:
+                currentSortQuery5 = ""; // Clear the sort query if no valid option is selected
+                break;
+        }
+    
+        // Reload the data with the current filter and updated sort
+        loadDataTable5();
+    }
+
+    private void jButton26ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedReportId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a report from the table.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        String queryFindUserId = "SELECT report_user FROM spam_list WHERE report_id = ?";
+        String queryCheckLock = "SELECT `lock` FROM users WHERE user_id = ?";
+        String queryLockUser = "UPDATE users SET `lock` = 1 WHERE user_id = ?";
+    
+        try (Connection conn = setupConnection();
+             PreparedStatement findUserStmt = conn.prepareStatement(queryFindUserId);
+             PreparedStatement checkStmt = conn.prepareStatement(queryCheckLock);
+             PreparedStatement lockStmt = conn.prepareStatement(queryLockUser)) {
+    
+            // Find the user_id linked to the selected report_id
+            findUserStmt.setInt(1, selectedReportId);
+            int userId;
+            try (ResultSet rs = findUserStmt.executeQuery()) {
+                if (rs.next()) {
+                    userId = rs.getInt("report_user");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Report not found or invalid report selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+    
+            // Check if the user is already locked
+            checkStmt.setInt(1, userId);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    boolean isLocked = rs.getBoolean("lock");
+                    if (isLocked) {
+                        JOptionPane.showMessageDialog(this, "The account of User ID " + userId + " is already locked.", "Already Locked", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+    
+            // Lock the user's account
+            lockStmt.setInt(1, userId);
+            int rowsAffected = lockStmt.executeUpdate();
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "User account of User ID " + userId + " has been successfully locked.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to lock the account for User ID " + userId + ". Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+    
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error occurred while locking the account: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    
 
     private void jComboBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox3ActionPerformed
         // TODO add your handling code here:
@@ -2216,9 +2407,6 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox9ActionPerformed
 
-    private void jButton26ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton26ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton26ActionPerformed
 
     private void jComboBox10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox10ActionPerformed
         // TODO add your handling code here:
