@@ -4,6 +4,8 @@
  */
 package com.example.Chat.app.Admin;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -38,6 +40,12 @@ public class AdminUI extends javax.swing.JFrame {
     private int selectedReportId = -1;
     private String currentFilterQuery5 = "";  // Stores the current WHERE clause
     private String currentSortQuery5 = "";
+
+    //ActiveUserList table 6
+    private String currentFilterQuery6 = "";  // Stores the current WHERE clause
+    private String currentNameFilterQuery6 = "";  // Stores the current WHERE clause
+    private String currentSortQuery6 = "";
+    private String currentTimeFilterQuery6 = ""; // Hold time-based filter
 
 
     /**
@@ -379,7 +387,166 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
+    private void loadDataTable6() {
+        // Base login query with time filter
+        String loginQuery = """
+            SELECT 
+                u.user_id,
+                u.username AS username, 
+                COUNT(l.login_id) AS open_app_count,
+                u.created_at
+            FROM users u
+            JOIN login_history l ON u.user_id = l.user_id
+        """;
+    
+        // Apply the time filter if present
+        if (!currentTimeFilterQuery6.isEmpty()) {
+            loginQuery += " WHERE " + currentTimeFilterQuery6.replace("created_at", "login_at");
+        }
 
+        // Apply the username filter if present (this is handled separately)
+        if (!currentNameFilterQuery6.isEmpty()) {
+            if (loginQuery.contains("WHERE")) {
+                loginQuery += " AND " + currentNameFilterQuery6.substring(6); // Remove "WHERE" from time filter query
+            } else {
+                loginQuery += " " + currentNameFilterQuery6;
+            }
+        }
+
+        loginQuery += " GROUP BY u.user_id, u.username";
+
+        // Apply the activity number filter (HAVING)
+        if (!currentFilterQuery6.isEmpty()) {
+            loginQuery += " " + currentFilterQuery6;
+        }
+
+        // Apply sorting
+        if (!currentSortQuery6.isEmpty()) {
+            loginQuery += " " + currentSortQuery6;
+        } else {
+            loginQuery += " ORDER BY u.user_id ASC";
+        }
+
+        // Default time range value
+        String timeRange = "All Time";
+        if (!currentTimeFilterQuery6.isEmpty()) {
+            int startIndex = currentTimeFilterQuery6.indexOf("BETWEEN") + 8;
+            int endIndex = currentTimeFilterQuery6.indexOf("AND") - 1;
+            if (startIndex > 0 && endIndex > startIndex) {
+                String startDate = currentTimeFilterQuery6.substring(startIndex, endIndex).trim();
+                String endDate = currentTimeFilterQuery6.substring(currentTimeFilterQuery6.indexOf("AND") + 4).trim();
+                timeRange = startDate + " to " + endDate;
+            }
+        }
+    
+        // Query for users_count with time filter
+        String usersCountQuery = """
+            SELECT 
+                u.user_id,
+                COALESCE(SUM(gm.member_count - 1), 0) AS users_count
+            FROM 
+                users u
+            LEFT JOIN 
+                (
+                    SELECT DISTINCT 
+                        sender_id, 
+                        group_id
+                    FROM 
+                        message
+                    WHERE 1=1
+            """;
+    
+        if (!currentTimeFilterQuery6.isEmpty()) {
+            usersCountQuery += " AND " + currentTimeFilterQuery6.replace("created_at", "sent_at");
+        }
+    
+        usersCountQuery += """
+                ) m ON u.user_id = m.sender_id
+            LEFT JOIN 
+                (
+                    SELECT 
+                        group_id,
+                        COUNT(user_id) AS member_count
+                    FROM 
+                        group_members
+                    GROUP BY 
+                        group_id
+                ) gm ON m.group_id = gm.group_id
+            GROUP BY 
+                u.user_id
+        """;
+    
+        // Query for groups_count with time filter
+        String groupsCountQuery = """
+            SELECT 
+                u.user_id,
+                COUNT(DISTINCT CASE WHEN cg.is_chat_with_user = 0 THEN cg.group_id END) AS groups_count
+            FROM 
+                users u
+            LEFT JOIN 
+                message m ON u.user_id = m.sender_id
+            LEFT JOIN 
+                chat_group cg ON m.group_id = cg.group_id
+            WHERE 1=1
+        """;
+    
+        if (!currentTimeFilterQuery6.isEmpty()) {
+            groupsCountQuery += " AND " + currentTimeFilterQuery6.replace("created_at", "sent_at");
+        }
+    
+        groupsCountQuery += """
+            GROUP BY 
+                u.user_id
+        """;
+    
+        try (Connection conn = setupConnection();
+             Statement stmtLogin = conn.createStatement();
+             Statement stmtUsersCount = conn.createStatement();
+             Statement stmtGroupsCount = conn.createStatement();
+             ResultSet loginResultSet = stmtLogin.executeQuery(loginQuery);
+             ResultSet usersCountResultSet = stmtUsersCount.executeQuery(usersCountQuery);
+             ResultSet groupsCountResultSet = stmtGroupsCount.executeQuery(groupsCountQuery)) {
+    
+            // Prepare table model
+            DefaultTableModel model = (DefaultTableModel) jTable6.getModel();
+            model.setRowCount(0);
+    
+            // Process results for users_count and groups_count
+            Map<Integer, Integer> usersCountMap = new HashMap<>();
+            while (usersCountResultSet.next()) {
+                usersCountMap.put(usersCountResultSet.getInt("user_id"), usersCountResultSet.getInt("users_count"));
+            }
+    
+            Map<Integer, Integer> groupsCountMap = new HashMap<>();
+            while (groupsCountResultSet.next()) {
+                groupsCountMap.put(groupsCountResultSet.getInt("user_id"), groupsCountResultSet.getInt("groups_count"));
+            }
+    
+            // Process results for login data
+            while (loginResultSet.next()) {
+                int userId = loginResultSet.getInt("user_id");
+                String username = loginResultSet.getString("username");
+                int openAppCount = loginResultSet.getInt("open_app_count");
+    
+                // Fetch users_count and groups_count
+                int usersCount = usersCountMap.getOrDefault(userId, 0);
+                int groupsCount = groupsCountMap.getOrDefault(userId, 0);
+    
+                // Add row to the table
+                model.addRow(new Object[]{timeRange, username, openAppCount, usersCount, groupsCount});
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    
+
+    
+    
+    
 
 
     /**
@@ -1234,7 +1401,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Activity number" }));
+        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Activity number < ", "Activity number = ", "Activity number > " }));
         jComboBox10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox10ActionPerformed(evt);
@@ -1242,6 +1409,11 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
         jButton28.setText(" Sort by");
+        jButton28.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton28ActionPerformed(evt);
+            }
+        });
 
         jComboBox11.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Create-time" }));
         jComboBox11.addActionListener(new java.awt.event.ActionListener() {
@@ -2367,6 +2539,135 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
+    //Active UserList table 6
+
+    private void jButton27ActionPerformed(java.awt.event.ActionEvent evt) {
+        String filterValue = jTextField12.getText().trim(); // Get the filter value from the text field
+        if (filterValue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a value to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            currentFilterQuery6 = ""; // Clear the filter query if input is empty
+            currentNameFilterQuery6 = "";
+            loadDataTable6(); // Reload without any filter
+            return;
+        }
+    
+        // Get selected filter option from combo box
+        String filterOption = (String) jComboBox10.getSelectedItem();
+    
+        // Construct the WHERE clause based on the selected filter
+        switch (filterOption) {
+            case "Name":
+                currentNameFilterQuery6 = "WHERE u.username LIKE '%" + filterValue + "%'";
+                currentFilterQuery6 = ""; // Reset the activity filter
+                break;
+            case "Activity number < ":
+                try {
+                    int activityCount = Integer.parseInt(filterValue); // Convert to integer for comparison
+                    currentFilterQuery6 = "HAVING COUNT(l.login_id) < " + activityCount;
+                    currentNameFilterQuery6 = ""; // Reset the username filter
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid number for the filter.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                break;
+            case "Activity number > ":
+                try {
+                    int activityCount = Integer.parseInt(filterValue); // Convert to integer for comparison
+                    currentFilterQuery6 = "HAVING COUNT(l.login_id) > " + activityCount;
+                    currentNameFilterQuery6 = ""; // Reset the username filter
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid number for the filter.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                break;
+            case "Activity number = ":
+                try {
+                    int activityCount = Integer.parseInt(filterValue); // Convert to integer for comparison
+                    currentFilterQuery6 = "HAVING COUNT(l.login_id) = " + activityCount;
+                    currentNameFilterQuery6 = ""; // Reset the username filter
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid number for the filter.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+    
+        // Reload the data with the updated filter and current sort
+        loadDataTable6();
+    }
+    
+    
+    
+
+
+    private void jButton28ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get the selected sorting criteria from the combo box
+        String sortBy = jComboBox11.getSelectedItem().toString();
+    
+        // Construct the ORDER BY clause based on the selected sort criteria
+        switch (sortBy) {
+            case "Name":
+                currentSortQuery6 = "ORDER BY u.username";
+                break;
+            case "Create-time":
+                currentSortQuery6 = "ORDER BY u.created_at";
+                break;
+            default:
+                currentSortQuery6 = ""; // Clear the sort query if no valid option is selected
+                break;
+        }
+    
+        // Reload the data with the current filter and updated sort
+        loadDataTable6();
+    }
+
+
+    private void jButton29ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Retrieve the time values from the text fields
+        String time1 = jTextField14.getText().trim(); // Time1
+        String time2 = jTextField15.getText().trim(); // Time2
+    
+        // Validate the input for Time1 (ensure it is not empty)
+        if (time1.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter Time1.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        // Validate the format of the time inputs
+        if (!isValidDateOrTimestamp(time1) || (!time2.isEmpty() && !isValidDateOrTimestamp(time2))) {
+            JOptionPane.showMessageDialog(this, 
+                    "Invalid time format. Use either YYYY-MM-DD or YYYY-MM-DD HH:MM:SS.", 
+                    "Invalid Input", 
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        // Adjust the upper bound (time2)
+        if (time2.isEmpty()) {
+            time2 = "NOW()"; // Use NOW() as the upper bound if Time2 is not provided
+        } else if (time2.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            time2 += " 23:59:59"; // Append end-of-day time
+        }
+    
+        // Adjust the lower bound (time1)
+        if (time1.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            time1 += " 00:00:00"; // Append start-of-day time for consistency
+        }
+    
+        // Construct the time filter query based on the time range
+        if (time2.equals("NOW()")) {
+            currentTimeFilterQuery6 = "created_at BETWEEN '" + time1 + "' AND " + time2;
+        } else {
+            currentTimeFilterQuery6 = "created_at BETWEEN '" + time1 + "' AND '" + time2 + "'";
+        }
+    
+        // Reload the data table with the updated filter
+        loadDataTable6();
+    }
+    
     
 
     private void jComboBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox3ActionPerformed
@@ -2412,17 +2713,11 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox10ActionPerformed
 
-    private void jButton27ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton27ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton27ActionPerformed
 
     private void jComboBox11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox11ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox11ActionPerformed
 
-    private void jButton29ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton29ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton29ActionPerformed
 
     private void jTextField14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField14ActionPerformed
         // TODO add your handling code here:
