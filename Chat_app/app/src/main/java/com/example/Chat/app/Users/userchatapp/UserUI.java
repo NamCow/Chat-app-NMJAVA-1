@@ -2,18 +2,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.example.Chat.app.Users;
+package com.example.Chat.app.Users.userchatapp;
 
 /**
  *
  * @author lainam
  */
 public class UserUI extends javax.swing.JFrame {
-
+    private String userID;
+    
     /**
      * Creates new form UserUI
      */
-    public UserUI() {
+    public UserUI(String userID) {
+        this.userID = userID;
         initComponents();
     }
 
@@ -565,6 +567,7 @@ public class UserUI extends javax.swing.JFrame {
 
         jList5.setBackground(new java.awt.Color(0, 102, 102));
         jList5.setModel(new javax.swing.AbstractListModel<String>() {
+            
             String[] strings = { "John | online", "Jenny | offine", "Nam | online", "Hoàng | offline", "Nghĩa | online", "Tom | offline" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
@@ -1102,7 +1105,7 @@ public class UserUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new UserUI().setVisible(true);
+                new UserUI("1").setVisible(true);
             }
         });
     }
