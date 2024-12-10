@@ -11,6 +11,17 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+
 /**
  *
  * @author ASUS
@@ -1547,8 +1558,18 @@ public class AdminUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("ActiveUserList", jPanel7);
 
         jButton1.setText("Create Chart for new SignUp Users by years: ");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Create Chart for Active Users by years: ");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jPanel9.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -2667,6 +2688,158 @@ public class AdminUI extends javax.swing.JFrame {
         // Reload the data table with the updated filter
         loadDataTable6();
     }
+    
+    //Create CHART 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        String year = jTextField18.getText().trim(); // Get the year from the text field
+        
+        // Validate the year input
+        if (year.isEmpty() || !year.matches("\\d{4}")) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid year (e.g., 2024).", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        Map<Integer, Integer> signUpData = new HashMap<>(); // To store month number and sign-up count
+        
+        // Initialize the map with 0 counts for each month (1-12)
+        for (int i = 1; i <= 12; i++) {
+            signUpData.put(i, 0);
+        }
+        
+        // Corrected query with a placeholder for the year
+        String query = """
+            SELECT MONTH(created_at) AS month, COUNT(*) AS count 
+            FROM users 
+            WHERE YEAR(created_at) = ? 
+            GROUP BY MONTH(created_at)
+            ORDER BY MONTH(created_at);
+        """;
+        
+        try (Connection conn = setupConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        
+            // Set the year parameter in the query
+            pstmt.setInt(1, Integer.parseInt(year));
+            ResultSet rs = pstmt.executeQuery();
+            
+            // Process the result set
+            while (rs.next()) {
+                int month = rs.getInt("month");
+                int count = rs.getInt("count");
+                signUpData.put(month, count); // Update count for the month
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error retrieving data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Create the chart
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int month = 1; month <= 12; month++) {
+            dataset.addValue(signUpData.get(month), "Sign-ups", String.valueOf(month));
+        }
+        
+        JFreeChart chart = ChartFactory.createBarChart(
+            "New Sign-ups by Month for Year " + year, 
+            "Month", 
+            "Number of Sign-ups", 
+            dataset, 
+            PlotOrientation.VERTICAL, 
+            false, true, false);
+        
+        // Customize chart (optional)
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setRangeGridlinePaint(Color.BLACK);
+        
+        // Display chart in jPanel9
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(jPanel9.getWidth(), jPanel9.getHeight()));
+        
+        jPanel9.removeAll(); // Clear previous content
+        jPanel9.setLayout(new BorderLayout());
+        jPanel9.add(chartPanel, BorderLayout.CENTER);
+        jPanel9.validate(); // Refresh panel
+    }
+
+   
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+        String year = jTextField19.getText().trim(); // Get the year from the text field
+    
+        // Validate the year input
+        if (year.isEmpty() || !year.matches("\\d{4}")) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid year (e.g., 2024).", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        Map<Integer, Integer> loginData = new HashMap<>(); // To store month number and login count
+    
+        // Initialize the map with 0 counts for each month (1-12)
+        for (int i = 1; i <= 12; i++) {
+            loginData.put(i, 0);
+        }
+    
+        // Query to get unique user login counts grouped by month
+        String query = """
+            SELECT MONTH(login_at) AS month, COUNT(DISTINCT user_id) AS count 
+            FROM login_history 
+            WHERE YEAR(login_at) = ? 
+            GROUP BY MONTH(login_at)
+            ORDER BY MONTH(login_at);
+        """;
+    
+        try (Connection conn = setupConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+    
+            // Set the year parameter in the query
+            pstmt.setInt(1, Integer.parseInt(year));
+            ResultSet rs = pstmt.executeQuery();
+    
+            // Process the result set
+            while (rs.next()) {
+                int month = rs.getInt("month");
+                int count = rs.getInt("count");
+                loginData.put(month, count); // Update count for the month
+            }
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error retrieving data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+    
+        // Create the chart
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int month = 1; month <= 12; month++) {
+            dataset.addValue(loginData.get(month), "Active Users", String.valueOf(month));
+        }
+    
+        JFreeChart chart = ChartFactory.createBarChart(
+            "Active Users by Month for Year " + year, 
+            "Month", 
+            "Number of Active Users", 
+            dataset, 
+            PlotOrientation.VERTICAL, 
+            false, true, false);
+    
+        // Customize chart (optional)
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setRangeGridlinePaint(Color.BLACK);
+    
+        // Display chart in jPanel9
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(jPanel9.getWidth(), jPanel9.getHeight()));
+    
+        jPanel9.removeAll(); // Clear previous content
+        jPanel9.setLayout(new BorderLayout());
+        jPanel9.add(chartPanel, BorderLayout.CENTER);
+        jPanel9.validate(); // Refresh panel
+    }
+    
+    
+    
+    
     
     
 
