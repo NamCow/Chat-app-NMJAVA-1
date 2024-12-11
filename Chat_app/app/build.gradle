@@ -27,6 +27,10 @@ dependencies {
     implementation'org.jfree:jfreechart:1.5.3'
 
     implementation 'mysql:mysql-connector-java:8.0.33'
+
+    implementation 'jakarta.mail:jakarta.mail-api:2.0.1'
+    
+    implementation 'com.sun.mail:jakarta.mail:2.0.1'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
