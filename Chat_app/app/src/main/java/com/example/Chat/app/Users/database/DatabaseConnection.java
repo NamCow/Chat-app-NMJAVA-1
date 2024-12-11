@@ -53,7 +53,7 @@ public class DatabaseConnection {
     }
 
     public String checkPassword(String usernameOrEmail, String password) {
-        String sql = "SELECT user_id FROM users WHERE (username = ? OR email = ?) AND password = ?";
+        String sql = "SELECT user_id,`lock` FROM users WHERE (username = ? OR email = ?) AND password = ?";
 
         ResultSet rs = null;
         try {
@@ -66,7 +66,12 @@ public class DatabaseConnection {
             stmt.setString(3, password);
             rs = stmt.executeQuery();
             if (rs.first()) {
-                return rs.getString("user_id");
+                String userID = rs.getString("user_id");
+                int lock = rs.getInt("lock");
+                    if (lock == 1) {
+                    return "Account is locked";
+                }
+                return userID;  
             }
         } catch (SQLException e) {
             e.printStackTrace();

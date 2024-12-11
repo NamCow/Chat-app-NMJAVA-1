@@ -220,6 +220,10 @@ public class UserLogin extends javax.swing.JFrame {
         String password = String.valueOf(jPasswordField1.getPassword());
         String userID = db.checkPassword(usernameOrEmail, password);
     if (userID != null) {
+        if (userID.equals("Account is locked")) {
+            JOptionPane.showMessageDialog(null, "Account is locked", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }else{
         JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -229,9 +233,8 @@ public class UserLogin extends javax.swing.JFrame {
                 userUI.setLocationRelativeTo(null); 
             }
         });
-        this.dispose(); // Đóng màn hình đăng nhập
-        
-        this.dispose();
+        this.dispose(); 
+        }
     } else {
         JOptionPane.showMessageDialog(null, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);
     }
