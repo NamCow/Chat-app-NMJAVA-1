@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.PreparedStatement;
@@ -245,5 +246,31 @@ public class DatabaseConnection {
         return messages;
     }    
     
-    
+    public boolean saveMessage(int userId, int groupId, String messageContent, LocalDateTime sentAt) {
+        String query = "INSERT INTO message (sender_id, group_id, message, sent_at) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, userId); // sender_id
+            stmt.setInt(2, groupId); // group_id
+            stmt.setString(3, messageContent); // message
+            stmt.setTimestamp(4, Timestamp.valueOf(sentAt)); // sent_at
+            stmt.executeUpdate();
+            return true; // Lưu thành công
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Lỗi khi lưu
+        }
+    }
+    public String getNamebyid (int id) {
+        String query = "SELECT username FROM users WHERE user_id = ?";
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+  }
 }

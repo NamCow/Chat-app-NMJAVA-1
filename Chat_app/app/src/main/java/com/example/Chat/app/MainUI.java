@@ -38,17 +38,18 @@ public class MainUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new UserLogin().setVisible(true);
+                new UserLogin().setVisible(true);
                 dispose(); 
             }
         });
 
-        userUIButton.addActionListener(new ActionListener() {
+        /*userUIButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new UserUI("1").setVisible(true);
                 dispose(); // Close the MainUI window
             }
-        });
+        });*/
         userButtonSignup.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

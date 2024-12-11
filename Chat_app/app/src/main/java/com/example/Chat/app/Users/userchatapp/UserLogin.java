@@ -7,6 +7,9 @@ package com.example.Chat.app.Users.userchatapp;
 import com.example.Chat.app.App;
 import com.example.Chat.app.Users.userchatapp.UserLogin;
 import com.example.Chat.app.Users.database.DatabaseConnection;
+import java.net.Socket;
+import java.io.IOException;
+
 import javax.swing.JOptionPane;
 /**
  *
@@ -23,6 +26,11 @@ public class UserLogin extends javax.swing.JFrame {
         initComponents();
     }
 
+
+    private Socket socket;
+
+    // Khi user đăng nhập thành công
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -227,7 +235,7 @@ public class UserLogin extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                UserUI userUI = new UserUI(userID); 
+                UserUI userUI = new UserUI(userID, socket); 
                 userUI.setVisible(true);           
                 userUI.pack();
                 userUI.setLocationRelativeTo(null); 

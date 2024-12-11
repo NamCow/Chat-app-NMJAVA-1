@@ -8,21 +8,21 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import com.example.Chat.app.Users.datastructure.Message;
 import com.example.Chat.app.Users.database.DatabaseConnection;
-
+import java.net.Socket;
 public class ChatGroup extends JFrame {
     private String senderId;
     private String groupId;
     private DatabaseConnection db = DatabaseConnection.getInstance();
-
+    Socket socket;
     // Các thành phần giao diện
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
 
-    public ChatGroup(String senderId, String groupId) {
+    public ChatGroup(String senderId, String groupId, Socket socket) {
         this.senderId = senderId;
         this.groupId = groupId;
-
+        this.socket = socket;
         initComponents();
     }
 

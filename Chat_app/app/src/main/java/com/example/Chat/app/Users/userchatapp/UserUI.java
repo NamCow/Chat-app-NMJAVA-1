@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import com.example.Chat.app.Users.database.DatabaseConnection;
+import java.net.Socket;
 
 /**
  *
@@ -17,12 +18,13 @@ import com.example.Chat.app.Users.database.DatabaseConnection;
 public class UserUI extends javax.swing.JFrame {
     private String userID;
     private DatabaseConnection db;
-
+    private Socket socket;
     /**
      * Creates new form UserUI
      */
-    public UserUI(String userID) {
+    public UserUI(String userID, Socket socket) {
         this.userID = userID;
+        this.socket = socket;
         db = DatabaseConnection.getInstance();
         initComponents();
         updateUserList();
@@ -1309,9 +1311,9 @@ public class UserUI extends javax.swing.JFrame {
                             int isChatWithUser = db.isChatWithUser(groupId);
                             if (isChatWithUser == 1) {
                                 // Nếu là chat cá nhân, mở cửa sổ ChatWindow
-                                openChatWindow(userID, groupId);
+                                openChatWindow(userID, groupId,socket);
                             } else if (isChatWithUser == 0) {
-                                openGroupChatWindow(userID, groupId);
+                                openGroupChatWindow(userID, groupId,socket);
                             } else {
                                 System.out.println("Không xác định kiểu chat cho group_id: " + groupId);
                             }
@@ -1323,13 +1325,14 @@ public class UserUI extends javax.swing.JFrame {
             }
         });
     }
-    private void openGroupChatWindow(String userId, String groupId) {
-        new ChatGroup(userId, groupId); 
+    private void openGroupChatWindow(String userId, String groupId, Socket socket) {
+        ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
+        chatGroup.setVisible(true);
     }
     
     // Phương thức để mở cửa sổ chat với người dùng đã chọn
-    private void openChatWindow(String senderId, String receiverId) {
-        ChatWindow chatWindow = new ChatWindow(senderId, receiverId);
+    private void openChatWindow(String senderId, String receiverId, Socket socket) {
+        ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
         chatWindow.setVisible(true);
     }
 
