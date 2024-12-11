@@ -17,10 +17,10 @@ public class DatabaseConnection {
 
     public static Connection getConnection() {
         try {
-            // Load JDBC driver
-            Class.forName(JDBC_DRIVER);
-            // Establish connection
-            connect = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+            if (connect == null || connect.isClosed()) {
+                Class.forName(JDBC_DRIVER);
+                connect = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "JDBC Driver not found: " + e.getMessage(), "Error",
@@ -53,16 +53,20 @@ public class DatabaseConnection {
     }
 
     public String checkPassword(String usernameOrEmail, String password) {
-        String sql = "SELECT userID FROM users WHERE (username = ? OR email = ?) AND password = ?";
+        String sql = "SELECT user_id FROM users WHERE (username = ? OR email = ?) AND password = ?";
+
         ResultSet rs = null;
         try {
-            PreparedStatement stmt = connect.prepareStatement(sql);
+            if (connect == null) {
+                connect = getConnection(); 
+            }
+            PreparedStatement stmt = connect.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, usernameOrEmail);
             stmt.setString(2, usernameOrEmail);
             stmt.setString(3, password);
             rs = stmt.executeQuery();
             if (rs.first()) {
-                return rs.getString("userID");
+                return rs.getString("user_id");
             }
         } catch (SQLException e) {
             e.printStackTrace();

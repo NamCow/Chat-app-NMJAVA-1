@@ -3,6 +3,7 @@ package com.example.Chat.app;
 import com.example.Chat.app.Admin.AdminUI;
 import com.example.Chat.app.Users.userchatapp.UserLogin;
 import com.example.Chat.app.Users.userchatapp.UserUI;
+import com.example.Chat.app.Users.userchatapp.UserSignup;
 import com.mysql.cj.xdevapi.Client;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class MainUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new AdminUI().setVisible(true);
-                dispose(); // Close the MainUI window
+                dispose(); 
             }
         });
 
@@ -37,7 +38,7 @@ public class MainUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new UserLogin().setVisible(true);
-                dispose(); // Close the MainUI window
+                dispose(); 
             }
         });
 
@@ -51,7 +52,7 @@ public class MainUI extends JFrame {
         userButtonSignup.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new UserLogin().setVisible(true);
+                new UserSignup().setVisible(true);
                 dispose(); 
             }
         });

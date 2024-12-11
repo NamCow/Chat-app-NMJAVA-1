@@ -221,10 +221,16 @@ public class UserLogin extends javax.swing.JFrame {
         String userID = db.checkPassword(usernameOrEmail, password);
     if (userID != null) {
         JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
-        UserUI userUI = new UserUI(userID); 
-        userUI.setVisible(true);
-        userUI.pack();
-        userUI.setLocationRelativeTo(null);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                UserUI userUI = new UserUI(userID); 
+                userUI.setVisible(true);           
+                userUI.pack();
+                userUI.setLocationRelativeTo(null); 
+            }
+        });
+        this.dispose(); // Đóng màn hình đăng nhập
+        
         this.dispose();
     } else {
         JOptionPane.showMessageDialog(null, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);

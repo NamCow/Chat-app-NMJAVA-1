@@ -346,7 +346,7 @@ public class UserSignup extends javax.swing.JFrame {
     
         Connection conn = DatabaseConnection.getConnection();
         if (conn != null) {
-            String sql = "INSERT INTO users (username, password, email, address, fullname, birthday, gender, created_at, status, role, lock) " +
+            String sql = "INSERT INTO users (username, password, email, address, fullname, birthday, gender, created_at, status, role, `lock`) " +
                          "VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, username);
