@@ -3,6 +3,8 @@ package com.example.Chat.app.Users.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.JOptionPane;
@@ -58,9 +60,10 @@ public class DatabaseConnection {
         ResultSet rs = null;
         try {
             if (connect == null) {
-                connect = getConnection(); 
+                connect = getConnection();
             }
-            PreparedStatement stmt = connect.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            PreparedStatement stmt = connect.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
             stmt.setString(1, usernameOrEmail);
             stmt.setString(2, usernameOrEmail);
             stmt.setString(3, password);
@@ -68,10 +71,10 @@ public class DatabaseConnection {
             if (rs.first()) {
                 String userID = rs.getString("user_id");
                 int lock = rs.getInt("lock");
-                    if (lock == 1) {
+                if (lock == 1) {
                     return "Account is locked";
                 }
-                return userID;  
+                return userID;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,5 +88,69 @@ public class DatabaseConnection {
             }
         }
         return null;
+    }
+
+    public List<Integer> getUsersThatReceivedMessages(int senderId) {
+        List<Integer> userIds = new ArrayList<>();
+        String query = "SELECT DISTINCT " +
+                       "CASE " +
+                       "WHEN cg.is_chat_with_user = 1 THEN mv.user_id " +
+                       "WHEN cg.is_chat_with_user = 0 THEN NULL " +
+                       "END AS user_id " +
+                       "FROM message m " +
+                       "INNER JOIN chat_group cg ON m.group_id = cg.group_id " +
+                       "LEFT JOIN group_members gm ON m.group_id = gm.group_id " +
+                       "WHERE m.sender_id = ? " +
+                       "AND (cg.is_chat_with_user = 1 OR cg.is_chat_with_user = 0)";
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, senderId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Integer userId = rs.getInt("user_id");
+                if (userId != 0) {
+                    userIds.add(userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userIds;
+    }
+    public List<String> getUsernamesThatReceivedMessages(int senderId) {
+        List<String> usernames = new ArrayList<>();
+        String query = "SELECT DISTINCT u.username " +
+                       "FROM message m " +
+                       "INNER JOIN chat_group cg ON m.group_id = cg.group_id " +
+                       "LEFT JOIN group_members gm ON m.group_id = gm.group_id " +
+                       "LEFT JOIN users u ON u.user_id = gm.user_id " +
+                       "WHERE m.sender_id = ? " +
+                       "AND (cg.is_chat_with_user = 1 OR cg.is_chat_with_user = 0)";
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, senderId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String username = rs.getString("username");
+                if (username != null) {
+                    usernames.add(username);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return usernames;
+    }
+    public int getUserIdByUsername(String username) {
+        int userId = -1;
+        String query = "SELECT user_id FROM users WHERE username = ?";
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                userId = rs.getInt("user_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userId;
     }
 }
