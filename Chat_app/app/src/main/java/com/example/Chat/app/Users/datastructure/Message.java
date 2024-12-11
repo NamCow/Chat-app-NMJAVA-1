@@ -1,21 +1,23 @@
 package com.example.Chat.app.Users.datastructure;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
 public class Message implements Serializable {
     private int messageId;
     private int senderId;
     private int groupId;
-    private String messageContent;
+    private String message;
     private LocalDateTime sentAt;
-    private boolean isChatWithUser; // Để kiểm tra loại tin nhắn (nhóm hay người dùng)
+    private boolean isChatWithUser;
+    private boolean senderIsUser;  // Thêm thuộc tính senderIsUser
 
     // Constructor
-    public Message(int senderId, int groupId, String messageContent, boolean isChatWithUser) {
+    public Message(int senderId, int groupId, String message) {
         this.senderId = senderId;
         this.groupId = groupId;
-        this.messageContent = messageContent;
-        this.isChatWithUser = isChatWithUser;
-        this.sentAt = LocalDateTime.now(); // Gán thời gian gửi tin nhắn
+        this.message = message;
+        this.sentAt = LocalDateTime.now();
     }
 
     // Getter và Setter
@@ -44,11 +46,11 @@ public class Message implements Serializable {
     }
 
     public String getMessageContent() {
-        return messageContent;
+        return message;
     }
 
-    public void setMessageContent(String messageContent) {
-        this.messageContent = messageContent;
+    public void setMessageContent(String message) {
+        this.message = message;
     }
 
     public LocalDateTime getSentAt() {
@@ -67,22 +69,33 @@ public class Message implements Serializable {
         isChatWithUser = chatWithUser;
     }
 
+    public boolean isSenderIsUser() {
+        return senderIsUser;
+    }
+
+    public void setSenderIsUser(boolean senderIsUser) {
+        this.senderIsUser = senderIsUser;
+    }
+
     // Phương thức chuyển đối tượng Message thành chuỗi để gửi qua socket
     @Override
     public String toString() {
-        // Nếu tin nhắn là giữa người dùng với người dùng, chúng ta sẽ thêm thông tin groupId và senderId
-        return senderId + "|" + groupId + "|" + messageContent + "|" + isChatWithUser;
+        // Nếu tin nhắn là giữa người dùng với người dùng, chúng ta sẽ thêm thông tin groupId, senderId và senderIsUser
+        return senderId + "|" + groupId + "|" + message + "|" + senderIsUser;  // Cập nhật để thêm senderIsUser
     }
 
     // Phương thức chuyển từ chuỗi (nhận qua socket) thành đối tượng Message
     public static Message fromString(String messageString) {
-        // Định dạng chuỗi: senderId|groupId|messageContent|isChatWithUser
+        // Định dạng chuỗi: senderId|groupId|messageContent|senderIsUser
         String[] parts = messageString.split("\\|");
         int senderId = Integer.parseInt(parts[0]);
         int groupId = Integer.parseInt(parts[1]);
         String messageContent = parts[2];
-        boolean isChatWithUser = Boolean.parseBoolean(parts[3]);
+        boolean senderIsUser = Boolean.parseBoolean(parts[3]); // Đọc thông tin senderIsUser từ chuỗi
 
-        return new Message(senderId, groupId, messageContent, isChatWithUser);
+        Message message = new Message(senderId, groupId, messageContent);
+        message.setSenderIsUser(senderIsUser);  // Cập nhật giá trị senderIsUser
+
+        return message;
     }
 }

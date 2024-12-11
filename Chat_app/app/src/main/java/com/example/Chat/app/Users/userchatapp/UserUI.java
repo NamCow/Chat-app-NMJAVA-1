@@ -1287,7 +1287,7 @@ public class UserUI extends javax.swing.JFrame {
     }// GEN-LAST:event_jTextField13ActionPerformed
 
     private void updateUserList() {
-        List<String> usernames = db.getUsernamesThatReceivedMessages(Integer.parseInt(userID));
+        List<String> usernames = db.getGroupNamesByUserId(Integer.parseInt(userID));
 
         DefaultListModel<String> model = new DefaultListModel<>();
         for (String username : usernames) {
@@ -1295,31 +1295,41 @@ public class UserUI extends javax.swing.JFrame {
         }
         jList1.setModel(model); // Cập nhật JList với model mới
     }
-    private void addMouseListenerToList() { 
-    jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-        @Override
-        public void mouseClicked(java.awt.event.MouseEvent evt) {
-            if (evt.getClickCount() == 1) { // Kiểm tra số lần nhấp chuột
-                String selectedUsername = jList1.getSelectedValue(); // Lấy tên người dùng được chọn
-                if (selectedUsername != null) {
-                    // Lấy user_id từ tên người dùng
-                    int receiverId = db.getUserIdByUsername(selectedUsername);
-                    if (receiverId != -1) { // Kiểm tra nếu tìm thấy user_id
-                        openChatWindow(userID, receiverId); // Mở cửa sổ chat
-                    } else {
-                        System.out.println("Không tìm thấy user_id cho username: " + selectedUsername);
+    private void addMouseListenerToList() {
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 1) { // Kiểm tra số lần nhấp chuột
+                    String selectedUsername = jList1.getSelectedValue(); // Lấy tên người dùng được chọn
+                    if (selectedUsername != null) {
+                        // Lấy thông tin về group_id từ tên nhóm
+                        String groupId = db.getGroupIdByGroupName(selectedUsername);
+                        if (groupId != "-1") { // Kiểm tra nếu tìm thấy group_id
+                            // Kiểm tra nếu là nhóm chat cá nhân hay nhóm chat chung
+                            int isChatWithUser = db.isChatWithUser(groupId);
+                            if (isChatWithUser == 1) {
+                                // Nếu là chat cá nhân, mở cửa sổ ChatWindow
+                                openChatWindow(userID, groupId);
+                            } else if (isChatWithUser == 0) {
+                                openGroupChatWindow(userID, groupId);
+                            } else {
+                                System.out.println("Không xác định kiểu chat cho group_id: " + groupId);
+                            }
+                        } else {
+                            System.out.println("Không tìm thấy group_id cho username: " + selectedUsername);
+                        }
                     }
                 }
             }
-        }
-    });
-}
-
-    
+        });
+    }
+    private void openGroupChatWindow(String userId, String groupId) {
+        new ChatGroup(userId, groupId); 
+    }
     
     // Phương thức để mở cửa sổ chat với người dùng đã chọn
-    private void openChatWindow(String senderId, int receiverId) {
-        ChatWindow chatWindow = new ChatWindow(senderId, Integer.toString(receiverId));
+    private void openChatWindow(String senderId, String receiverId) {
+        ChatWindow chatWindow = new ChatWindow(senderId, receiverId);
         chatWindow.setVisible(true);
     }
 

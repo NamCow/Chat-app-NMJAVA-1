@@ -1,4 +1,6 @@
 package com.example.Chat.app.Users.userchatapp;
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -6,25 +8,26 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import com.example.Chat.app.Users.datastructure.Message;
 import com.example.Chat.app.Users.database.DatabaseConnection;
-public class ChatWindow extends JFrame {
-    private String userID;
-    private String groupID;
-    DatabaseConnection db = DatabaseConnection.getInstance();
+
+public class ChatGroup extends JFrame {
+    private String senderId;
+    private String groupId;
+    private DatabaseConnection db = DatabaseConnection.getInstance();
+
     // Các thành phần giao diện
     private JTextArea chatArea;
     private JTextField messageField;
     private JButton sendButton;
 
-    public ChatWindow(String userID, String groupID) {
-        this.userID = userID;
-        this.groupID = groupID;
-        
+    public ChatGroup(String senderId, String groupId) {
+        this.senderId = senderId;
+        this.groupId = groupId;
+
         initComponents();
-        loadMessages();
     }
 
     private void initComponents() {
-        setTitle("Chat with User " + groupID);
+        setTitle("Group Chat - Group " + groupId);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -38,7 +41,7 @@ public class ChatWindow extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //sendMessage();
+               // sendMessage();
             }
         });
 
@@ -54,26 +57,30 @@ public class ChatWindow extends JFrame {
         pack();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
         setVisible(true);
+
+        //loadMessages();
     }
 
-    private void loadMessages() {
-        int userIdInt = Integer.parseInt(userID);
-        int groupIdInt = Integer.parseInt(groupID);
-        // Lấy danh sách tin nhắn
-        List<Message> messages = db.getMessagesUser(userIdInt, groupIdInt);
-        
-        // Duyệt qua các tin nhắn và thêm vào chatArea
+    /*private void loadMessages() {
+        List<Message> messages = db.getMessagesInGroup(groupId);
         for (Message message : messages) {
-            if (message.isSenderIsUser()) {
-                // Tin nhắn của user, hiển thị ở bên phải
+            if (message.getSenderId() == senderId) {
                 chatArea.append("You: " + message.getMessageContent() + "\n");
             } else {
-                // Tin nhắn từ người khác, hiển thị ở bên trái
                 chatArea.append("Them: " + message.getMessageContent() + "\n");
             }
         }
-    }
-    
-    
-    
+    }*/
+
+   /* private void sendMessage() {
+        String content = messageField.getText();
+        if (!content.isEmpty()) {
+            int senderIdInt = Integer.parseInt(senderId);
+            int groupIdInt = Integer.parseInt(this.groupId);
+            Message message = new Message(senderIdInt, groupIdInt, content, false); // groupId != 0 cho nhóm
+            db.sendMessage(message);
+            chatArea.append("You: " + content + "\n");
+            messageField.setText("");
+        }
+    }*/
 }
