@@ -18,14 +18,20 @@ repositories {
 dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation libs.junit.jupiter
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // This dependency is used by the application.
     implementation libs.guava
-
+    implementation 'com.google.guava:guava:31.0.1-jre'
+    implementation files('/Users/lainam/Downloads/mysql-connector-j-9.1.0/mysql-connector-j-9.1.0.jar')
+    implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
+    implementation 'org.json:json:20210307'
+    implementation 'io.socket:socket.io-client:2.0.1'
     implementation'org.jfree:jfreechart:1.5.3'
-
     implementation 'mysql:mysql-connector-java:8.0.33'
 
     implementation 'jakarta.mail:jakarta.mail-api:2.0.1'

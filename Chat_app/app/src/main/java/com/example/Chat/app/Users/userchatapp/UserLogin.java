@@ -2,10 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.example.Chat.app.Users;
+package com.example.Chat.app.Users.userchatapp;
 
 import com.example.Chat.app.App;
-
+import com.example.Chat.app.Users.userchatapp.UserLogin;
+import com.example.Chat.app.Users.database.DatabaseConnection;
+import javax.swing.JOptionPane;
 /**
  *
  * @author lainam
@@ -15,6 +17,8 @@ public class UserLogin extends javax.swing.JFrame {
     /**
      * Creates new form UserLogin
      */
+
+    
     public UserLogin() {
         initComponents();
     }
@@ -211,10 +215,31 @@ public class UserLogin extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        DatabaseConnection db = DatabaseConnection.getInstance();
+        String usernameOrEmail = jTextField2.getText();
+        String password = String.valueOf(jPasswordField1.getPassword());
+        String userID = db.checkPassword(usernameOrEmail, password);
+    if (userID != null) {
+        JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                UserUI userUI = new UserUI(userID); 
+                userUI.setVisible(true);           
+                userUI.pack();
+                userUI.setLocationRelativeTo(null); 
+            }
+        });
+        this.dispose(); // Đóng màn hình đăng nhập
+        
+        this.dispose();
+    } else {
+        JOptionPane.showMessageDialog(null, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+
     }//GEN-LAST:event_jButton3ActionPerformed
 
     /**

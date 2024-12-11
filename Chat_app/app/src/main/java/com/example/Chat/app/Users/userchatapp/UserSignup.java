@@ -2,19 +2,42 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.example.Chat.app.Users;
+package com.example.Chat.app.Users.userchatapp;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+
+
+import com.example.Chat.app.Users.userchatapp.UserLogin;
+import com.example.Chat.app.Users.database.DatabaseConnection;
+import java.sql.PreparedStatement;
+import java.sql.Connection;
+import javax.swing.ButtonGroup;
 
 /**
  *
  * @author lainam
  */
+
+
+
+
+
 public class UserSignup extends javax.swing.JFrame {
+   
+
+
+    
 
     /**
      * Creates new form UserSignup
      */
     public UserSignup() {
         initComponents();
+        ButtonGroup genderGroup = new ButtonGroup();
+        genderGroup.add(jCheckBox1); // Thêm checkbox nam
+        genderGroup.add(jCheckBox2);
+        
     }
 
     /**
@@ -266,7 +289,7 @@ public class UserSignup extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField4ActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code
     }//GEN-LAST:event_jTextField4ActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
@@ -289,9 +312,69 @@ public class UserSignup extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
+
+
+
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) 
+    {//GEN-FIRST:event_jButton2ActionPerformed
+        String fullname = jTextField1.getText();
+        String email = jTextField2.getText();
+        String username = jTextField3.getText();
+        String password = new String(jPasswordField1.getPassword());
+        String address = jTextField4.getText();
+        String dob = jFormattedTextField1.getText();
+        String gender = "";
+            if (jCheckBox1.isSelected()) {
+                gender = "male";
+            } else if (jCheckBox2.isSelected()) {
+                gender = "female";
+            }
+    
+        String role = "user";
+        String status = "inactive";
+        int lock = 0;
+    
+        if (fullname.isEmpty() || email.isEmpty() || username.isEmpty() || password.isEmpty() || address.isEmpty() || dob.isEmpty() || gender.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all the fields", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (dob.isEmpty() || !dob.matches("\\d{4}/\\d{2}/\\d{2}")) {
+        JOptionPane.showMessageDialog(this, "Please enter a valid date in format yyyy/MM/dd", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    
+        Connection conn = DatabaseConnection.getConnection();
+        if (conn != null) {
+            String sql = "INSERT INTO users (username, password, email, address, fullname, birthday, gender, created_at, status, role, `lock`) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, username);
+                stmt.setString(2, password);
+                stmt.setString(3, email);
+                stmt.setString(4, address);
+                stmt.setString(5, fullname);
+                stmt.setString(6, dob);
+                stmt.setString(7, gender);
+                stmt.setString(8, status);
+                stmt.setString(9, role);
+                stmt.setInt(10, lock);
+    
+                int rowsInserted = stmt.executeUpdate();
+                if (rowsInserted > 0) {
+                    JOptionPane.showMessageDialog(this, "Sign up successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    this.dispose(); 
+                    UserLogin loginFrame = new UserLogin(); 
+                    loginFrame.setVisible(true);
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error inserting data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+}
+
+        //GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
