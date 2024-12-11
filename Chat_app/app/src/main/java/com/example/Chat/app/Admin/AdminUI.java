@@ -6,6 +6,8 @@ package com.example.Chat.app.Admin;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -21,6 +23,15 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 /**
  *
@@ -253,7 +264,7 @@ public class AdminUI extends javax.swing.JFrame {
     private void loadDataTable3() {
         // Base SQL query to fetch the sign-up list
         String query = """
-            SELECT created_at, username, fullname 
+            SELECT created_at, username, fullname, email
             FROM users
             """;
     
@@ -298,8 +309,10 @@ public class AdminUI extends javax.swing.JFrame {
                 String createdAt = rs.getString("created_at");
                 String username = rs.getString("username");
                 String fullname = rs.getString("fullname");
+                String email = rs.getString("email");
     
-                model.addRow(new Object[]{createdAt, username, fullname});
+    
+                model.addRow(new Object[]{createdAt, username, fullname, email});
             }
     
         } catch (SQLException e) {
@@ -309,7 +322,7 @@ public class AdminUI extends javax.swing.JFrame {
     }
     
     private void loadDataTable4() {
-        // Base SQL query to fetch the sign-up list
+        // Base SQL query to fetch the group-chat list
         String query = """
             SELECT created_at, group_id, group_name
             FROM chat_group
@@ -359,7 +372,7 @@ public class AdminUI extends javax.swing.JFrame {
     
     private void loadDataTable5() {
         // SQL query to retrieve report details for reported users
-        String query = "SELECT spam_list.report_at,spam_list.report_id, users.username, users.fullname " +
+        String query = "SELECT spam_list.report_at,spam_list.report_id, users.username, users.fullname,users.email " +
                        "FROM spam_list " +
                        "JOIN users ON spam_list.report_user = users.user_id";
 
@@ -372,7 +385,7 @@ public class AdminUI extends javax.swing.JFrame {
         if (!currentSortQuery5.isEmpty()) {
             query += " " + currentSortQuery5;
         } else {
-            query += " ORDER BY created_at ASC"; // Default sorting
+            query += " ORDER BY spam_list.report_id DESC"; // Default sorting
         }
     
         try (Connection conn = setupConnection();
@@ -389,7 +402,8 @@ public class AdminUI extends javax.swing.JFrame {
                 String spamId = rs.getString("report_id");
                 String username = rs.getString("username");
                 String fullname = rs.getString("fullname");
-                model.addRow(new Object[]{reportTime,spamId, username, fullname});
+                String email = rs.getString("email");
+                model.addRow(new Object[]{reportTime,spamId, username, fullname, email});
             }
     
         } catch (SQLException e) {
@@ -585,6 +599,7 @@ public class AdminUI extends javax.swing.JFrame {
         jButton13 = new javax.swing.JButton();
         jButton14 = new javax.swing.JButton();
         jButton15 = new javax.swing.JButton();
+        jButton32 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jTextField16 = new javax.swing.JTextField();
         jButton30 = new javax.swing.JButton();
@@ -715,7 +730,7 @@ public class AdminUI extends javax.swing.JFrame {
                 }
             }
         });
-
+        
 
         jButton7.setText("Add");
         jButton7.addActionListener(new java.awt.event.ActionListener() {
@@ -772,11 +787,18 @@ public class AdminUI extends javax.swing.JFrame {
                 jButton14ActionPerformed(evt);
             }
         });
-        
+
         jButton15.setText(" Sort by");
         jButton15.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton15ActionPerformed(evt);
+            }
+        });
+
+        jButton32.setText("Reset Password");
+        jButton32.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton32ActionPerformed(evt);
             }
         });
 
@@ -791,19 +813,21 @@ public class AdminUI extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jButton32, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                                .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jButton8, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(98, 98, 98)
-                                .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton13, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -832,13 +856,14 @@ public class AdminUI extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton7)
                     .addComponent(jButton8)
-                    .addComponent(jButton9))
+                    .addComponent(jButton9)
+                    .addComponent(jButton13))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton13)
                     .addComponent(jButton10)
                     .addComponent(jButton12)
-                    .addComponent(jButton11))
+                    .addComponent(jButton11)
+                    .addComponent(jButton32))
                 .addGap(17, 17, 17))
         );
 
@@ -891,9 +916,16 @@ public class AdminUI extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane7.setViewportView(jTable7);
@@ -956,9 +988,16 @@ public class AdminUI extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane2.setViewportView(jTable2);
@@ -1016,7 +1055,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name" }));
+        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Email" }));
         jComboBox4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox4ActionPerformed(evt);
@@ -1031,7 +1070,7 @@ public class AdminUI extends javax.swing.JFrame {
         });
 
 
-        jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Account's create-time" }));
+        jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Account's create-time", "Email" }));
         jComboBox5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox5ActionPerformed(evt);
@@ -1067,26 +1106,33 @@ public class AdminUI extends javax.swing.JFrame {
 
         jTable3.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Time", "Username", "Name"
+                "Time", "Username", "Name", "Email"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane3.setViewportView(jTable3);
@@ -1174,6 +1220,8 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
+        
+
         jComboBox7.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Account's create-time" }));
         jComboBox7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1200,9 +1248,16 @@ public class AdminUI extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane4.setViewportView(jTable4);
@@ -1288,7 +1343,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        jComboBox8.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Time", "Username" }));
+        jComboBox8.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Time", "Username", "Email" }));
         jComboBox8.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox8ActionPerformed(evt);
@@ -1311,25 +1366,25 @@ public class AdminUI extends javax.swing.JFrame {
 
         jTable5.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Time", "Spam_Id", "Username", "Name"
+                "Time", "Spam_Id", "Username", "Name", "Email"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -1412,7 +1467,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Activity number < ", "Activity number = ", "Activity number > " }));
+        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Activity number" }));
         jComboBox10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox10ActionPerformed(evt);
@@ -1479,9 +1534,16 @@ public class AdminUI extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane6.setViewportView(jTable6);
@@ -1563,7 +1625,7 @@ public class AdminUI extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-
+        
         jButton2.setText("Create Chart for Active Users by years: ");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1650,7 +1712,6 @@ public class AdminUI extends javax.swing.JFrame {
 
     // ---------------------------------------------------ManageUserList table -------------------------------------------------
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {                                          
-        JTextField userIdField = new JTextField();
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
         JTextField emailField = new JTextField();
@@ -1661,7 +1722,6 @@ public class AdminUI extends javax.swing.JFrame {
         JTextField roleField = new JTextField();
     
         Object[] formFields = {
-            "User ID (Required):", userIdField,
             "Username (Required):", usernameField,
             "Password (Required):", passwordField,
             "Email (Required):", emailField,
@@ -1679,18 +1739,9 @@ public class AdminUI extends javax.swing.JFrame {
                 if (conn == null) return;
     
                 // Validate required fields
-                if (userIdField.getText().isEmpty() || usernameField.getText().isEmpty() ||
+                if (usernameField.getText().isEmpty() ||
                     passwordField.getPassword().length == 0 || emailField.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Please fill all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-    
-                // Validate numeric User ID
-                int userId;
-                try {
-                    userId = Integer.parseInt(userIdField.getText());
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(null, "User ID must be a numeric value.", "Input Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
     
@@ -1720,20 +1771,18 @@ public class AdminUI extends javax.swing.JFrame {
                     return;
                 }
     
-                String query = "INSERT INTO users (user_id, username, password, email, address, fullname, birthday, gender, status, role, created_at, `lock`) " +
-               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'inactive', ?, NOW(), false)";
-
+                String query = "INSERT INTO users (username, password, email, address, fullname, birthday, gender, status, role, created_at, `lock`) " +
+                               "VALUES (?, ?, ?, ?, ?, ?, ?, 'inactive', ?, NOW(), false)";
     
                 try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-                    pstmt.setInt(1, userId);
-                    pstmt.setString(2, usernameField.getText());
-                    pstmt.setString(3, new String(passwordField.getPassword()));
-                    pstmt.setString(4, emailField.getText());
-                    pstmt.setString(5, addressField.getText().isEmpty() ? null : addressField.getText());
-                    pstmt.setString(6, fullnameField.getText().isEmpty() ? null : fullnameField.getText());
-                    pstmt.setDate(7, birthdayField.getText().isEmpty() ? null : Date.valueOf(birthdayField.getText()));
-                    pstmt.setString(8, gender);
-                    pstmt.setString(9, role);
+                    pstmt.setString(1, usernameField.getText());
+                    pstmt.setString(2, new String(passwordField.getPassword()));
+                    pstmt.setString(3, emailField.getText());
+                    pstmt.setString(4, addressField.getText().isEmpty() ? null : addressField.getText());
+                    pstmt.setString(5, fullnameField.getText().isEmpty() ? null : fullnameField.getText());
+                    pstmt.setDate(6, birthdayField.getText().isEmpty() ? null : Date.valueOf(birthdayField.getText()));
+                    pstmt.setString(7, gender);
+                    pstmt.setString(8, role);
     
                     int rowsAffected = pstmt.executeUpdate();
                     if (rowsAffected > 0) {
@@ -1749,6 +1798,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         }
     }
+    
                  
     
     
@@ -1924,7 +1974,107 @@ public class AdminUI extends javax.swing.JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error updating password: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }                                         
+    }              
+    
+    private void jButton32ActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        if (selectedUserId == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a user to reset the password.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        try (Connection conn = setupConnection()) {
+            if (conn == null) return;
+    
+            // Fetch the email of the selected user
+            String query = "SELECT email FROM users WHERE user_id = ?";
+            String userEmail = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, selectedUserId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        userEmail = rs.getString("email");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "User not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+            }
+    
+            // Generate a random password
+            String newPassword = generateRandomPassword();
+    
+            // Update the password in the database
+            String updatePasswordQuery = "UPDATE users SET password = ? WHERE user_id = ?";
+            try (PreparedStatement updateStmt = conn.prepareStatement(updatePasswordQuery)) {
+                updateStmt.setString(1, newPassword);
+                updateStmt.setInt(2, selectedUserId);
+    
+                int rowsAffected = updateStmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    JOptionPane.showMessageDialog(this, "Password reset successfully. Sending email...", "Success", JOptionPane.INFORMATION_MESSAGE);
+    
+                    // Send the email with the new password
+                    if (sendEmail(userEmail, "Password Reset", "Your new password is: " + newPassword)) {
+                        JOptionPane.showMessageDialog(this, "Email sent successfully to " + userEmail, "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Failed to send email.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to reset password.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error resetting password: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    // Method to generate a random password
+    private String generateRandomPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) { // Generate a 10-character password
+            int index = random.nextInt(characters.length());
+            password.append(characters.charAt(index));
+        }
+        return password.toString();
+    }
+    
+    // Method to send an email using JavaMail API
+    private boolean sendEmail(String recipient, String subject, String content) {
+        final String senderEmail = "vhoangtestmail@gmail.com"; // Replace with your email
+        final String senderPassword = "elhz vuuw tbzm cfav"; // Replace with your email password
+    
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com"); // Gmail SMTP server
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+    
+        // Use jakarta.mail.Authenticator
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(senderEmail, senderPassword);
+            }
+        });
+    
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(senderEmail));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+            message.setText(content);
+    
+            Transport.send(message);
+            return true;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {
         if (selectedUserId == -1) {
@@ -2204,6 +2354,9 @@ public class AdminUI extends javax.swing.JFrame {
             case "Name":
                 currentFilterQuery3 = "WHERE fullname LIKE '%" + filterValue + "%'";
                 break;
+            case "Email":
+                currentFilterQuery3 = "WHERE email LIKE '%" + filterValue + "%'";
+                break;
             default:
                 JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -2223,6 +2376,8 @@ public class AdminUI extends javax.swing.JFrame {
             currentSortQuery3 = "ORDER BY fullname";  // Sort by full name
         } else if (sortBy.equals("Account's create-time")) {
             currentSortQuery3 = "ORDER BY created_at";  // Sort by account's create-time
+        } else if (sortBy.equals("Email")) {
+            currentSortQuery3 = "ORDER BY email";  // Sort by account's create-time   
         } else {
             currentSortQuery3 = "";  // Clear the sort query if no valid option is selected
         }
@@ -2277,7 +2432,7 @@ public class AdminUI extends javax.swing.JFrame {
     }
 
 
-    //GroupChat List table 4
+    //---------------------------------GroupChat List table 4-------------------------------------------
 
     private void jButton20ActionPerformed(java.awt.event.ActionEvent evt) {
         String filterValue = jTextField8.getText().trim(); // Get the filter value from the text field
@@ -2441,7 +2596,7 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
-    //SpamList table 5
+    //-------------------------------SpamList table 5---------------------
 
     private void jButton24ActionPerformed(java.awt.event.ActionEvent evt) {
         String filterValue = jTextField10.getText().trim(); // Get the filter value from the text field
@@ -2472,6 +2627,9 @@ public class AdminUI extends javax.swing.JFrame {
                 break;
             case "Username":
                 currentFilterQuery5 = "WHERE users.username LIKE '%" + filterValue + "%'";
+                break;
+            case "Email":
+                currentFilterQuery5 = "WHERE users.email LIKE '%" + filterValue + "%'";
                 break;
             default:
                 JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -2560,7 +2718,7 @@ public class AdminUI extends javax.swing.JFrame {
         }
     }
     
-    //Active UserList table 6
+    //------------------------------Active UserList table 6------------------
 
     private void jButton27ActionPerformed(java.awt.event.ActionEvent evt) {
         String filterValue = jTextField12.getText().trim(); // Get the filter value from the text field
@@ -2689,7 +2847,7 @@ public class AdminUI extends javax.swing.JFrame {
         loadDataTable6();
     }
     
-    //Create CHART 
+    //--------------------------------Create CHART---------------------------- 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         String year = jTextField18.getText().trim(); // Get the year from the text field
         
@@ -2904,6 +3062,7 @@ public class AdminUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jComboBox12ActionPerformed
 
+    //----------------------------User Friend List table 7----------------------
     private void jButton30ActionPerformed(java.awt.event.ActionEvent evt) {
         // Get the selected sorting criteria from the combo box
         String sortBy = jComboBox12.getSelectedItem().toString();
@@ -3025,6 +3184,7 @@ public class AdminUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton29;
     private javax.swing.JButton jButton30;
     private javax.swing.JButton jButton31;
+    private javax.swing.JButton jButton32;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;

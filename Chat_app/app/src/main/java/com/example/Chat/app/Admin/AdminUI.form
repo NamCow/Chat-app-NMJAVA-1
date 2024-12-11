@@ -60,22 +60,25 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jButton7" min="-2" pref="140" max="-2" attributes="0"/>
-                                  <Component id="jButton13" alignment="0" min="-2" pref="140" max="-2" attributes="0"/>
+                                  <Component id="jButton32" alignment="0" min="-2" pref="140" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="jButton10" min="-2" pref="140" max="-2" attributes="0"/>
                                       <EmptySpace pref="54" max="32767" attributes="0"/>
                                       <Component id="jButton11" min="-2" pref="140" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="jButton12" min="-2" pref="140" max="-2" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="1" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="jButton8" min="-2" pref="140" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="98" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="jButton9" min="-2" pref="140" max="-2" attributes="0"/>
                                   </Group>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jButton12" min="-2" pref="140" max="-2" attributes="0"/>
+                                  <Component id="jButton13" alignment="1" min="-2" pref="140" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" attributes="0">
@@ -112,13 +115,14 @@
                           <Component id="jButton7" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jButton8" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jButton9" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jButton13" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jButton13" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jButton10" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jButton12" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jButton11" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jButton32" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                   </Group>
@@ -132,7 +136,7 @@
                   <StringArray count="3">
                     <StringItem index="0" value="Name"/>
                     <StringItem index="1" value="Username"/>
-                    <StringItem index="2" value="State"/>
+                    <StringItem index="2" value="Status"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -288,6 +292,14 @@
                 <Property name="text" type="java.lang.String" value=" Sort by"/>
               </Properties>
             </Component>
+            <Component class="javax.swing.JButton" name="jButton32">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Reset Password"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton32ActionPerformed"/>
+              </Events>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="jPanel5">
@@ -403,9 +415,9 @@
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="3" rowCount="9">
-                        <Column editable="true" title="Username" type="java.lang.String"/>
-                        <Column editable="true" title="Number of friends" type="java.lang.String"/>
-                        <Column editable="true" title="Numbers of friends&apos; friends" type="java.lang.String"/>
+                        <Column editable="false" title="Username" type="java.lang.String"/>
+                        <Column editable="false" title="Number of friends" type="java.lang.String"/>
+                        <Column editable="false" title="Numbers of friends&apos; friends" type="java.lang.String"/>
                       </Table>
                     </Property>
                   </Properties>
@@ -471,9 +483,9 @@
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="3" rowCount="9">
-                        <Column editable="true" title="Time" type="java.lang.String"/>
-                        <Column editable="true" title="Username" type="java.lang.String"/>
-                        <Column editable="true" title="Name" type="java.lang.String"/>
+                        <Column editable="false" title="Time" type="java.lang.String"/>
+                        <Column editable="false" title="Username" type="java.lang.String"/>
+                        <Column editable="false" title="Name" type="java.lang.String"/>
                       </Table>
                     </Property>
                   </Properties>
@@ -597,8 +609,9 @@
             <Component class="javax.swing.JComboBox" name="jComboBox4">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="1">
+                  <StringArray count="2">
                     <StringItem index="0" value="Name"/>
+                    <StringItem index="1" value="Email"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -619,9 +632,10 @@
             <Component class="javax.swing.JComboBox" name="jComboBox5">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="2">
+                  <StringArray count="3">
                     <StringItem index="0" value="Name"/>
                     <StringItem index="1" value="Account&apos;s create-time"/>
+                    <StringItem index="2" value="Email"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -681,10 +695,11 @@
                 <Component class="javax.swing.JTable" name="jTable3">
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="3" rowCount="9">
-                        <Column editable="true" title="Time" type="java.lang.String"/>
-                        <Column editable="true" title="Username" type="java.lang.String"/>
-                        <Column editable="true" title="Name" type="java.lang.String"/>
+                      <Table columnCount="4" rowCount="9">
+                        <Column editable="false" title="Time" type="java.lang.String"/>
+                        <Column editable="false" title="Username" type="java.lang.String"/>
+                        <Column editable="false" title="Name" type="java.lang.String"/>
+                        <Column editable="false" title="Email" type="java.lang.String"/>
                       </Table>
                     </Property>
                   </Properties>
@@ -813,9 +828,9 @@
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="3" rowCount="9">
-                        <Column editable="true" title="Create-time" type="java.lang.String"/>
-                        <Column editable="true" title="GroupId" type="java.lang.String"/>
-                        <Column editable="true" title="GroupName" type="java.lang.String"/>
+                        <Column editable="false" title="Create-time" type="java.lang.String"/>
+                        <Column editable="false" title="GroupId" type="java.lang.String"/>
+                        <Column editable="false" title="GroupName" type="java.lang.String"/>
                       </Table>
                     </Property>
                   </Properties>
@@ -905,9 +920,10 @@
             <Component class="javax.swing.JComboBox" name="jComboBox8">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="2">
+                  <StringArray count="3">
                     <StringItem index="0" value="Time"/>
                     <StringItem index="1" value="Username"/>
+                    <StringItem index="2" value="Email"/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -951,11 +967,12 @@
                 <Component class="javax.swing.JTable" name="jTable5">
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                      <Table columnCount="4" rowCount="9">
+                      <Table columnCount="5" rowCount="9">
                         <Column editable="false" title="Time" type="java.lang.String"/>
                         <Column editable="false" title="Spam_Id" type="java.lang.String"/>
                         <Column editable="false" title="Username" type="java.lang.String"/>
                         <Column editable="false" title="Name" type="java.lang.String"/>
+                        <Column editable="false" title="Email" type="java.lang.Object"/>
                       </Table>
                     </Property>
                   </Properties>
@@ -1168,11 +1185,11 @@
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="5" rowCount="9">
-                        <Column editable="true" title="Time" type="java.lang.String"/>
-                        <Column editable="true" title="Username" type="java.lang.String"/>
-                        <Column editable="true" title="Open app ... " type="java.lang.Integer"/>
-                        <Column editable="true" title="Chat with ... users" type="java.lang.Integer"/>
-                        <Column editable="true" title="Chat with ... groups" type="java.lang.Integer"/>
+                        <Column editable="false" title="Time" type="java.lang.String"/>
+                        <Column editable="false" title="Username" type="java.lang.String"/>
+                        <Column editable="false" title="Open app ... " type="java.lang.Integer"/>
+                        <Column editable="false" title="Chat with ... users" type="java.lang.Integer"/>
+                        <Column editable="false" title="Chat with ... groups" type="java.lang.Integer"/>
                       </Table>
                     </Property>
                   </Properties>
