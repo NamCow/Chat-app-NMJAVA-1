@@ -39,6 +39,7 @@ public class MainUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 new UserLogin().setVisible(true);
                 new UserLogin().setVisible(true);
+                new UserLogin().setVisible(true);
                 dispose(); 
             }
         });

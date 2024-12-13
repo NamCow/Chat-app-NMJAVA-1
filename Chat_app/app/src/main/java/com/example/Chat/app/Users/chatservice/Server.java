@@ -14,7 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-
+import com.example.Chat.app.Users.database.DatabaseConnection;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -81,10 +81,19 @@ public class Server {
         }
 
         private void broadcast(String message, int senderId) {
+            DatabaseConnection db = DatabaseConnection.getInstance(); // Sử dụng singleton instance
+            String username = db.getNamebyid(senderId); // Lấy username từ userID
+        
+            // Giả sử tin nhắn có định dạng "userID|groupID|messageContent"
+            String[] parts = message.split("\\|", 3);
+            String messageContent = parts.length == 3 ? parts[2] : message; // Lấy messageContent
+        
+            String formattedMessage = username + ": " + messageContent; // Định dạng lại tin nhắn
+        
             synchronized (clients) {
                 for (Map.Entry<Integer, PrintWriter> client : clients.entrySet()) {
                     if (client.getKey() != senderId) { // Không gửi lại cho người gửi
-                        client.getValue().println(message);
+                        client.getValue().println(formattedMessage); // Sử dụng formattedMessage
                     }
                 }
             }

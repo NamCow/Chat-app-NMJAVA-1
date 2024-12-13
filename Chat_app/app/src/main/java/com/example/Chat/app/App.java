@@ -1,6 +1,5 @@
 package com.example.Chat.app;
 import com.example.Chat.app.Users.chatservice.Server;
-
 public class App {
     public static void main(String[] args) {
         new Thread(new Runnable() {

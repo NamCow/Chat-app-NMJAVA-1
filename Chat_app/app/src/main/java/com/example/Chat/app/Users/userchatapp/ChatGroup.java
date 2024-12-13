@@ -5,13 +5,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.List;
 import com.example.Chat.app.Users.datastructure.Message;
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import java.net.Socket;
+import java.time.LocalDateTime;
 public class ChatGroup extends JFrame {
-    private String senderId;
-    private String groupId;
+    private String userID;
+    private String groupID;
+    private PrintWriter out;
+    private BufferedReader in;
     private DatabaseConnection db = DatabaseConnection.getInstance();
     Socket socket;
     // Các thành phần giao diện
@@ -19,15 +26,17 @@ public class ChatGroup extends JFrame {
     private JTextField messageField;
     private JButton sendButton;
 
-    public ChatGroup(String senderId, String groupId, Socket socket) {
-        this.senderId = senderId;
-        this.groupId = groupId;
+    public ChatGroup(String userID, String groupID, Socket socket) {
+        this.userID = userID;
+        this.groupID = groupID;
         this.socket = socket;
         initComponents();
+        connectToServer();
+        loadMessages();
     }
 
     private void initComponents() {
-        setTitle("Group Chat - Group " + groupId);
+        setTitle("Group Chat - Group " + groupID);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -41,7 +50,11 @@ public class ChatGroup extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               // sendMessage();
+                String messageContent = messageField.getText();
+                if (!messageContent.isEmpty()) {
+                    sendMessage(messageContent);  
+                    messageField.setText("");    
+                }
             }
         });
 
@@ -61,26 +74,64 @@ public class ChatGroup extends JFrame {
         //loadMessages();
     }
 
-    /*private void loadMessages() {
-        List<Message> messages = db.getMessagesInGroup(groupId);
+    private void loadMessages() {
+        int senderIDInt = Integer.parseInt(userID); // Chuyển senderId từ String sang int
+        int groupIdInt = Integer.parseInt(groupID); // Chuyển groupId từ String sang int
+
+        // Gọi phương thức getGroupMessages để lấy danh sách tin nhắn
+        List<Message> messages = db.getGroupMessages(senderIDInt, groupIdInt);
+
+        // Hiển thị tin nhắn trong chatArea
         for (Message message : messages) {
-            if (message.getSenderId() == senderId) {
+            if (message.getSenderId() == senderIDInt) { // Nếu người gửi là chính người dùng
                 chatArea.append("You: " + message.getMessageContent() + "\n");
-            } else {
-                chatArea.append("Them: " + message.getMessageContent() + "\n");
+            } else { // Nếu người gửi là thành viên khác trong nhóm
+                chatArea.append(message.getSenderName() + ": " + message.getMessageContent() + "\n");
             }
         }
-    }*/
+    }
+    private void connectToServer() {
+        try {
+            // Kết nối đến server
+            socket = new Socket("localhost", 12345);  // Thay localhost bằng IP của server nếu cần
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-   /* private void sendMessage() {
-        String content = messageField.getText();
-        if (!content.isEmpty()) {
-            int senderIdInt = Integer.parseInt(senderId);
-            int groupIdInt = Integer.parseInt(this.groupId);
-            Message message = new Message(senderIdInt, groupIdInt, content, false); // groupId != 0 cho nhóm
-            db.sendMessage(message);
-            chatArea.append("You: " + content + "\n");
-            messageField.setText("");
+            // Gửi userID tới server để đăng ký
+            out.println(userID);
+
+            // Lắng nghe tin nhắn từ server
+            new Thread(() -> {
+                try {
+                    String message;
+                    while ((message = in.readLine()) != null) {
+                        // Hiển thị tin nhắn trong chatArea
+                        chatArea.append(message + "\n");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Unable to connect to the server.", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }*/
+    }
+   private void sendMessage(String messageContent) {
+        // Định dạng tin nhắn: "senderId|groupId|messageContent"
+        String message = userID + "|" + groupID + "|" + messageContent;
+        out.println(message);  // Gửi tin nhắn tới server
+        
+        chatArea.append("You: " + messageContent + "\n");
+        
+        int userIdInt = Integer.parseInt(userID);
+        int groupIdInt = Integer.parseInt(groupID);
+        LocalDateTime sentAt = LocalDateTime.now().plusHours(7); 
+        boolean success = db.saveMessage(userIdInt, groupIdInt, messageContent, sentAt);
+
+        if (!success) {
+            JOptionPane.showMessageDialog(this, "Failed to save message to database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }
