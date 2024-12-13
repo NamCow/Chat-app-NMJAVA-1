@@ -185,7 +185,7 @@ public class UserUI extends javax.swing.JFrame {
 
         jTextField2.setText("Text chat");
 
-        jButton3.setText("Send");
+        jButton3.setText("OPEN CHAT");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -563,17 +563,24 @@ public class UserUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }// GEN-LAST:event_jButton4ActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton3ActionPerformed
-        if (selectedGroupId!= null) {
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                       
+        if (selectedGroupId != null) {
             int isChatWithUser = db.isChatWithUser(selectedGroupId);
             
-            // Hiển thị JPanel chứa các nút
-            showActionPanel(isChatWithUser, userID, selectedGroupId, socket);
-            
+            // Mở thẳng cửa sổ chat phù hợp
+            if (isChatWithUser == 1) {
+                // Mở chat cá nhân
+                openChatWindow(userID, selectedGroupId, socket);
+            } else if (isChatWithUser == 0) {
+                // Mở chat nhóm
+                openGroupChatWindow(userID, selectedGroupId, socket);
+            } else {
+                System.out.println("Không xác định kiểu chat cho group_id: " + selectedGroupId);
+            }
         } else {
             System.out.println("Không tìm thấy group_id cho username: " + selectedGroupId);
         }
-    }// GEN-LAST:event_jButton3ActionPerformed
+    }
 
     private void jTextField12ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField12ActionPerformed
         // TODO add your handling code here:
@@ -660,7 +667,7 @@ public class UserUI extends javax.swing.JFrame {
     // });
 }
 
-private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
+/*private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
     // Tạo một JDialog để hiển thị JPanel
     JDialog dialog = new JDialog();
     dialog.setTitle("Actions");
@@ -710,7 +717,7 @@ private void showActionPanel(int isChatWithUser, String userID, String groupId, 
     dialog.add(panel);
     dialog.setVisible(true);
 }
-
+*/
 
     private void openGroupChatWindow(String userId, String groupId, Socket socket) {
         ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);

@@ -324,4 +324,34 @@ public class DatabaseConnection {
     }
     return messages;
 }
+public List<String> getFriendshipStatuses(int userId, int groupId) {
+    List<String> friendshipStatuses = new ArrayList<>();
+    String query = "SELECT " +
+                   "    gm.user_id AS member_id, " +
+                   "    CASE " +
+                   "        WHEN uf.friendship = 'blocked' THEN 'blocked' " +
+                   "        WHEN uf.friendship IS NULL THEN 'no relationship' " +
+                   "        ELSE uf.friendship " +
+                   "    END AS friendship_status " +
+                   "FROM group_members gm " +
+                   "LEFT JOIN users_friend uf " +
+                   "    ON (uf.user_id = ? AND uf.friend_id = gm.user_id) " +
+                   "    OR (uf.friend_id = ? AND uf.user_id = gm.user_id) " +
+                   "WHERE gm.group_id = ? AND gm.user_id != ?";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, userId);
+        stmt.setInt(2, userId);
+        stmt.setInt(3, groupId);
+        stmt.setInt(4, userId);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            String friendshipStatus = rs.getString("friendship_status");
+            friendshipStatuses.add(friendshipStatus);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return friendshipStatuses;
+}
+
 }

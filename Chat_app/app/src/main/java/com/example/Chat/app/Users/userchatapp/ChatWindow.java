@@ -48,13 +48,30 @@ public class ChatWindow extends JFrame {
         messageField = new JTextField(30);
         sendButton = new JButton("Send");
 
-        sendButton.addActionListener((ActionEvent e) -> {
+        /*sendButton.addActionListener((ActionEvent e) -> {
             String messageContent = messageField.getText();
             if (!messageContent.isEmpty()) {
                 sendMessage(messageContent);  
                 messageField.setText("");    
             }
+        });*/
+        sendButton.addActionListener((ActionEvent e) -> {
+            String messageContent = messageField.getText();
+            int userIdInt = Integer.parseInt(userID);
+            int groupIdInt = Integer.parseInt(groupID);
+            List<String> friendshipStatuses = db.getFriendshipStatuses(userIdInt, groupIdInt);
+        
+            // Kiểm tra nếu có bất kỳ trạng thái nào là "Blocked"
+            if (friendshipStatuses.contains("blocked")) {
+                // Nếu có trạng thái "Blocked", không cho phép gửi tin nhắn và hiển thị thông báo
+                JOptionPane.showMessageDialog(null, "You are blocked and cannot send messages.");
+            } else if (!messageContent.isEmpty()) {
+                // Nếu không bị Blocked, tiếp tục gửi tin nhắn
+                sendMessage(messageContent);  
+                messageField.setText("");    
+            }
         });
+        
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
