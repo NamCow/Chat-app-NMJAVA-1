@@ -6,8 +6,13 @@ package com.example.Chat.app.Users.userchatapp;
 
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import java.net.Socket;
 
@@ -27,10 +32,11 @@ public class UserUI extends javax.swing.JFrame {
         this.socket = socket;
         db = DatabaseConnection.getInstance();
         initComponents();
-        updateUserList();
         addMouseListenerToList();
+        updateUserList();
         userInfor1.setId(userID);
-        userFriend1.setId(userID);
+        //userFriend1.setId(userID);
+        
     }
 
     /**
@@ -132,8 +138,13 @@ public class UserUI extends javax.swing.JFrame {
         jList1.setBackground(new java.awt.Color(244, 186, 129));
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Nam | Online | Friend", "Nghĩa | Online | Friend", "Hoàng | Offline | Friend", "Tom | Offline | Blocked" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+            public int getSize() 
+            { 
+                return strings.length; 
+            }
+            public String getElementAt(int i) {
+                 return strings[i]; 
+                }
         });
         jScrollPane2.setViewportView(jList1);
 
@@ -655,6 +666,7 @@ public class UserUI extends javax.swing.JFrame {
         }
         jList1.setModel(model); // Cập nhật JList với model mới
     }
+    /* 
     private void addMouseListenerToList() {
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -682,7 +694,84 @@ public class UserUI extends javax.swing.JFrame {
                 }
             }
         });
+    }*/
+    private void addMouseListenerToList() {
+    jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            if (evt.getClickCount() == 1) { // Kiểm tra số lần nhấp chuột
+                String selectedUsername = jList1.getSelectedValue(); // Lấy tên người dùng được chọn
+                if (selectedUsername != null) {
+                    // Lấy thông tin về group_id từ tên nhóm
+                    String groupId = db.getGroupIdByGroupName(selectedUsername);
+                    if (!groupId.equals("-1")) { // Kiểm tra nếu tìm thấy group_id
+                        // Kiểm tra nếu là nhóm chat cá nhân hay nhóm chat chung
+                        int isChatWithUser = db.isChatWithUser(groupId);
+                        
+                        // Hiển thị JPanel chứa các nút
+                        showActionPanel(isChatWithUser, userID, groupId, socket);
+                        
+                    } else {
+                        System.out.println("Không tìm thấy group_id cho username: " + selectedUsername);
+                    }
+                }
+            }
+        }
+    });
+}
+
+private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
+    // Tạo một JDialog để hiển thị JPanel
+    JDialog dialog = new JDialog();
+    dialog.setTitle("Actions");
+    dialog.setSize(300, 200);
+    dialog.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
+    dialog.setModal(true); // Chặn các hành động khác
+
+    // Tạo JPanel chứa các nút
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    
+    // Nút Chat
+    JButton chatButton = new JButton("Chat");
+    chatButton.addActionListener(e -> {
+        if (isChatWithUser == 1) {
+            openChatWindow(userID, groupId, socket);
+        } else if (isChatWithUser == 0) {
+            openGroupChatWindow(userID, groupId, socket);
+        }
+        dialog.dispose();
+    });
+    panel.add(chatButton);
+    
+    // Nút Add Member (chỉ hiện với nhóm chat chung)
+    if (isChatWithUser == 0) {
+        JButton addMemberButton = new JButton("Add Member");
+        addMemberButton.addActionListener(e -> {
+            // Xử lý logic thêm thành viên vào nhóm chat
+            System.out.println("Thêm thành viên vào nhóm với groupId: " + groupId);
+            dialog.dispose();
+        });
+        panel.add(addMemberButton);
     }
+    
+    // Nút Add Friend (chỉ hiện với chat cá nhân)
+    if (isChatWithUser == 1) {
+        JButton addFriendButton = new JButton("Add Friend");
+        addFriendButton.addActionListener(e -> {
+            // Xử lý logic thêm bạn bè
+            System.out.println("Thêm bạn với userID: " + userID);
+            dialog.dispose();
+        });
+        panel.add(addFriendButton);
+    }
+
+    // Thêm JPanel vào JDialog và hiển thị
+    dialog.add(panel);
+    dialog.setVisible(true);
+}
+
+
     private void openGroupChatWindow(String userId, String groupId, Socket socket) {
         ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
         chatGroup.setVisible(true);

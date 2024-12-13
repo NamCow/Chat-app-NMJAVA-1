@@ -119,7 +119,7 @@ public class DatabaseConnection {
         return userIds;
     }
 
-    public List<String> getUsernamesThatReceivedMessages(int senderId) {
+    /*public List<String> getUsernamesThatReceivedMessages(int senderId) {
         List<String> usernames = new ArrayList<>();
         String query = "SELECT DISTINCT u.username " +
                 "FROM message m " +
@@ -142,15 +142,27 @@ public class DatabaseConnection {
             e.printStackTrace();
         }
         return usernames;
-    }
+    }*/
     public List<String> getGroupNamesByUserId(int userId) {
         List<String> groupNames = new ArrayList<>();
         String query = "SELECT DISTINCT cg.group_name " +
                        "FROM group_members gm " +
                        "INNER JOIN chat_group cg ON gm.group_id = cg.group_id " +
-                       "WHERE gm.user_id = ?";
-        try (PreparedStatement stmt = connect.prepareStatement(query)) {
-            stmt.setInt(1, userId);
+                       "LEFT JOIN users_friend uf " +
+                       "ON (cg.is_chat_with_user = 1 AND " +
+                       "    ((uf.user_id = gm.user_id AND uf.friend_id = ?) " +
+                       "     OR (uf.friend_id = gm.user_id AND uf.user_id = ?))) " +
+                       "WHERE gm.user_id = ? " +
+                       "AND (cg.is_chat_with_user = 0 " +
+                       "     OR (cg.is_chat_with_user = 1 AND " +
+                       "         (uf.friendship IS NULL OR uf.friendship != 'blocked')))";
+                       System.out.println(query);
+                       try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            
+
+            stmt.setInt(1, userId); 
+            stmt.setInt(2, userId); 
+            stmt.setInt(3, userId); 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 String groupName = rs.getString("group_name");
@@ -163,6 +175,9 @@ public class DatabaseConnection {
         }
         return groupNames;
     }
+    
+    
+    
 
     public String getGroupIdByGroupName(String groupName) {
         String groupId = "-1";

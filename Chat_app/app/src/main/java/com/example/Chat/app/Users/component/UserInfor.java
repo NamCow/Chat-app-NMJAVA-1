@@ -28,7 +28,8 @@ import jakarta.mail.internet.MimeMessage;
  */
 public class UserInfor extends javax.swing.JPanel {
     private int userId;
-
+    DatabaseConnection db = DatabaseConnection.getInstance();
+    Connection conn = DatabaseConnection.getConnection();
     /**
      * Creates new form UserInfor
      */
@@ -44,7 +45,7 @@ public class UserInfor extends javax.swing.JPanel {
 
     private void loadUserInformation() {
         String query = "SELECT username, email, address, fullname, birthday, gender, role, status FROM users WHERE user_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (
                 PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
 
             if (pstmt == null) {
