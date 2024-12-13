@@ -11,7 +11,7 @@ public class Message implements Serializable {
     private LocalDateTime sentAt;
     private boolean isChatWithUser;
     private boolean senderIsUser;  // Thêm thuộc tính senderIsUser
-
+    private String senderName;
     // Constructor
     public Message(int senderId, int groupId, String message) {
         this.senderId = senderId;
@@ -75,6 +75,13 @@ public class Message implements Serializable {
 
     public void setSenderIsUser(boolean senderIsUser) {
         this.senderIsUser = senderIsUser;
+    }
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
     // Phương thức chuyển đối tượng Message thành chuỗi để gửi qua socket

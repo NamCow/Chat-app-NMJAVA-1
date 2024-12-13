@@ -273,4 +273,40 @@ public class DatabaseConnection {
         }
         return null;
   }
+  public List<Message> getGroupMessages(int userId, int groupId) {
+    List<Message> messages = new ArrayList<>();
+    String query = "SELECT m.message_id, m.sender_id, u.fullname AS sender_name, " +
+                   "m.group_id, g.group_name, m.message, m.sent_at " +
+                   "FROM message m " +
+                   "JOIN users u ON m.sender_id = u.user_id " +
+                   "JOIN chat_group g ON m.group_id = g.group_id " +
+                   "JOIN group_members gm ON g.group_id = gm.group_id " +
+                   "WHERE g.group_id = ? AND gm.user_id = ? " +
+                   "ORDER BY m.sent_at ASC";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, groupId);
+        stmt.setInt(2, userId);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            int messageId = rs.getInt("message_id");
+            int senderId = rs.getInt("sender_id");
+            String senderName = rs.getString("sender_name");
+            int groupIdFromDb = rs.getInt("group_id");
+            //String groupName = rs.getString("group_name");
+            String messageContent = rs.getString("message");
+            LocalDateTime sentAt = rs.getTimestamp("sent_at").toLocalDateTime();
+
+            Message message = new Message(senderId, groupIdFromDb, messageContent);
+            message.setMessageId(messageId);
+            message.setSenderName(senderName);
+            //message.setGroupName(groupName);
+            message.setSentAt(sentAt);
+
+            messages.add(message);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return messages;
+}
 }
