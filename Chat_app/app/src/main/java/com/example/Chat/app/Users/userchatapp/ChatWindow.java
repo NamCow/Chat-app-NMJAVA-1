@@ -25,6 +25,7 @@ public class ChatWindow extends JFrame {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
+    private JButton spamButton;
 
     public ChatWindow(String userID, String groupID, Socket socket) {
         this.userID = userID;
@@ -55,6 +56,19 @@ public class ChatWindow extends JFrame {
                 messageField.setText("");    
             }
         });*/
+
+        spamButton = new JButton("Spam");
+        spamButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int userIdInt = Integer.parseInt(userID);
+                int groupIdInt = Integer.parseInt(groupID);
+                
+                // Call the reportSpamUsers method when Spam button is clicked
+                db.reportSpamUsers(userIdInt, groupIdInt);
+                JOptionPane.showMessageDialog(null, "Spam reports have been sent.");
+            }
+        });
         sendButton.addActionListener((ActionEvent e) -> {
             String messageContent = messageField.getText();
             int userIdInt = Integer.parseInt(userID);
@@ -76,11 +90,11 @@ public class ChatWindow extends JFrame {
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
         bottomPanel.add(sendButton);
-
+        bottomPanel.add(spamButton);
         // Thêm các panel vào cửa sổ
         add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-
+        
         // Cài đặt kích thước cửa sổ
         pack();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
