@@ -123,7 +123,7 @@ public class UserFriend extends javax.swing.JPanel {
             }
         }
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (
                 PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
 
             if (pstmt == null) {
@@ -481,7 +481,7 @@ public class UserFriend extends javax.swing.JPanel {
                 )
             """;
     
-            try (Connection conn = DatabaseConnection.getConnection();
+            try (
                  PreparedStatement pstmt = conn != null ? conn.prepareStatement(deleteQuery) : null) {
     
                 if (pstmt == null) {
@@ -524,7 +524,7 @@ public class UserFriend extends javax.swing.JPanel {
                 )
             """;
     
-            try (Connection conn = DatabaseConnection.getConnection();
+            try (
                  PreparedStatement pstmt = conn != null ? conn.prepareStatement(updateQuery) : null) {
     
                 if (pstmt == null) {
@@ -566,7 +566,7 @@ public class UserFriend extends javax.swing.JPanel {
                 )
             """;
     
-            try (Connection conn = DatabaseConnection.getConnection();
+            try (
                  PreparedStatement pstmt = conn != null ? conn.prepareStatement(deleteQuery) : null) {
     
                 if (pstmt == null) {
@@ -609,7 +609,7 @@ public class UserFriend extends javax.swing.JPanel {
                 )
             """;
     
-            try (Connection conn = DatabaseConnection.getConnection();
+            try (
                  PreparedStatement pstmt = conn != null ? conn.prepareStatement(updateQuery) : null) {
     
                 if (pstmt == null) {

@@ -35,7 +35,7 @@ public class UserUI extends javax.swing.JFrame {
         addMouseListenerToList();
         updateUserList();
         userInfor1.setId(userID);
-        //userFriend1.setId(userID);
+        userFriend1.setId(userID);
         
     }
 
