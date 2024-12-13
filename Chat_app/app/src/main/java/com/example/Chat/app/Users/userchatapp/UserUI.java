@@ -27,10 +27,11 @@ public class UserUI extends javax.swing.JFrame {
         this.socket = socket;
         db = DatabaseConnection.getInstance();
         initComponents();
-        updateUserList();
         addMouseListenerToList();
+        updateUserList();
         userInfor1.setId(userID);
-        userFriend1.setId(userID);
+        //userFriend1.setId(userID);
+        
     }
 
     /**
@@ -132,8 +133,13 @@ public class UserUI extends javax.swing.JFrame {
         jList1.setBackground(new java.awt.Color(244, 186, 129));
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Nam | Online | Friend", "Nghĩa | Online | Friend", "Hoàng | Offline | Friend", "Tom | Offline | Blocked" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+            public int getSize() 
+            { 
+                return strings.length; 
+            }
+            public String getElementAt(int i) {
+                 return strings[i]; 
+                }
         });
         jScrollPane2.setViewportView(jList1);
 

@@ -20,7 +20,8 @@ public class UserFriend extends javax.swing.JPanel {
     private String selectedUsername;//Table 1 Friend List
     private String selectedUsername2;//Table 2 Friend Request
     private String currentFilterQuery1 = ""; // Stores the current WHERE clause
-
+    DatabaseConnection db = DatabaseConnection.getInstance();
+    Connection conn = DatabaseConnection.getConnection();
     /**
      * Creates new form UserFriend
      */
@@ -61,7 +62,7 @@ public class UserFriend extends javax.swing.JPanel {
             query += " AND u.status = 'active'"; // Filter for online users
         }
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (
                 PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
 
             if (pstmt == null) {
