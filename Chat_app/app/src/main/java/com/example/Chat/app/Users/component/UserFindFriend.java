@@ -6,13 +6,21 @@ package com.example.Chat.app.Users.component;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
+import java.net.Socket;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
+import com.example.Chat.app.Users.userchatapp.ChatGroup;
+import com.example.Chat.app.Users.userchatapp.ChatWindow;
 
 /**
  *
@@ -20,8 +28,10 @@ import com.example.Chat.app.Users.database.DatabaseConnection;
  */
 public class UserFindFriend extends javax.swing.JPanel {
     private int userId = -1;
+    private String selectedUsername = null;
     DatabaseConnection db = DatabaseConnection.getInstance();
     Connection conn = DatabaseConnection.getConnection();
+    private Socket socket;
 
     /**
      * Creates new form UserFindFriend
@@ -30,8 +40,9 @@ public class UserFindFriend extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setId(String userId) {
+    public void setId(String userId, Socket socket) {
         this.userId = Integer.parseInt(userId);
+        this.socket = socket;
     }
 
     /**
@@ -41,6 +52,7 @@ public class UserFindFriend extends javax.swing.JPanel {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
+    // <editor-fold defaultstate="collapsed" desc="Generated
     // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -48,11 +60,10 @@ public class UserFindFriend extends javax.swing.JPanel {
         jTextField7 = new javax.swing.JTextField();
         jButton19 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
-        jToggleButton1 = new javax.swing.JToggleButton();
-        jToggleButton2 = new javax.swing.JToggleButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
         jComboBox1 = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
 
         jPanel8.setBackground(new java.awt.Color(204, 102, 0));
 
@@ -66,10 +77,11 @@ public class UserFindFriend extends javax.swing.JPanel {
         });
 
         jButton7.setText("Add friend");
-
-        jToggleButton1.setText("Chat");
-
-        jToggleButton2.setText("Create group");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jTable3.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][] {
@@ -90,11 +102,32 @@ public class UserFindFriend extends javax.swing.JPanel {
             }
         });
         jScrollPane6.setViewportView(jTable3);
+        jTable3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int selectedRow = jTable3.getSelectedRow();
+                if (selectedRow >= 0) {
+                    // Assuming Username is in the first column of the table
+                    Object usernameValue = jTable3.getValueAt(selectedRow, 0);
+                    if (usernameValue != null) {
+                        selectedUsername = usernameValue.toString();
+                    } else {
+                        selectedUsername = null; // Reset if User ID is not valid
+                    }
+                }
+            }
+        });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullName", "Username", " " }));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("Chat");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -110,20 +143,19 @@ public class UserFindFriend extends javax.swing.JPanel {
                                                 Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(jPanel8Layout
-                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(jToggleButton2, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addGroup(jPanel8Layout.createSequentialGroup()
                                                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 120,
                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 100,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel8Layout
+                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(jButton7, javax.swing.GroupLayout.Alignment.LEADING,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
                                 .addGap(90, 90, 90)));
         jPanel8Layout.setVerticalGroup(
                 jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -140,9 +172,7 @@ public class UserFindFriend extends javax.swing.JPanel {
                                         .addGroup(jPanel8Layout.createSequentialGroup()
                                                 .addComponent(jButton7)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jToggleButton1)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(jToggleButton2))
+                                                .addComponent(jButton1))
                                         .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -183,17 +213,17 @@ public class UserFindFriend extends javax.swing.JPanel {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-    
+
         // Check if userId is set
         if (userId == -1) {
             JOptionPane.showMessageDialog(this, "User ID is not set. Please log in again.", "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-    
+
         // Get selected filter option from combo box
         String filterOption = (String) jComboBox1.getSelectedItem();
-    
+
         // Construct the SQL query based on the selected filter
         String query;
         switch (filterOption) {
@@ -208,32 +238,32 @@ public class UserFindFriend extends javax.swing.JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
         }
-    
+
         // Retrieve data from the database
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
-    
+        try (
+                PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
+
             if (pstmt == null) {
                 JOptionPane.showMessageDialog(this, "Failed to establish a database connection.", "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-    
+
             // Set the filter value with wildcards for the LIKE clause
             pstmt.setString(1, "%" + filterValue + "%");
             pstmt.setInt(2, userId);
-    
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 DefaultTableModel model = (DefaultTableModel) jTable3.getModel();
                 model.setRowCount(0); // Clear existing data
-    
+
                 // Populate the table with the search results
                 while (rs.next()) {
                     String username = rs.getString("username");
                     String fullname = rs.getString("fullname");
-                    model.addRow(new Object[]{username, fullname});
+                    model.addRow(new Object[] { username, fullname });
                 }
-    
+
                 if (model.getRowCount() == 0) {
                     JOptionPane.showMessageDialog(this, "No matching results found.", "Information",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -245,9 +275,324 @@ public class UserFindFriend extends javax.swing.JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Check if userId is set
+        if (userId == -1) {
+            JOptionPane.showMessageDialog(this, "User ID is not set. Please log in again.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Check if a user is selected in the table
+        if (selectedUsername == null || selectedUsername.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please select a user to add as a friend.", "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            // Retrieve the user_id of the selectedUsername
+            String query = "SELECT user_id FROM users WHERE username = ?";
+            try (PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
+                if (pstmt == null) {
+                    JOptionPane.showMessageDialog(this, "Failed to establish a database connection.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                pstmt.setString(1, selectedUsername);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        int selectedUserId = rs.getInt("user_id");
+
+                        // Check if the friendship or request already exists (both directions)
+                        String checkQuery = "SELECT * FROM users_friend WHERE " +
+                                "(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+                        try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+                            checkStmt.setInt(1, userId);
+                            checkStmt.setInt(2, selectedUserId);
+                            checkStmt.setInt(3, selectedUserId);
+                            checkStmt.setInt(4, userId);
+
+                            try (ResultSet checkRs = checkStmt.executeQuery()) {
+                                if (checkRs.next()) {
+                                    JOptionPane.showMessageDialog(this,
+                                            "You have already sent/have a friend request to/from this user or are already friends.",
+                                            "Information", JOptionPane.INFORMATION_MESSAGE);
+                                    return;
+                                }
+                            }
+                        }
+
+                        // Insert the new friendship request
+                        String insertQuery = "INSERT INTO users_friend (user_id, friend_id, friendship, request_at) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                            insertStmt.setInt(1, userId);
+                            insertStmt.setInt(2, selectedUserId);
+                            insertStmt.setString(3, "pending");
+                            insertStmt.setDate(4, new java.sql.Date(System.currentTimeMillis()));
+
+                            int rowsInserted = insertStmt.executeUpdate();
+                            if (rowsInserted > 0) {
+                                JOptionPane.showMessageDialog(this, "Friend request sent successfully!", "Success",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(this, "Failed to send friend request.", "Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Selected user does not exist.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error adding friend: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    //Socket for chat 
+
+    private void openGroupChatWindow(String userId, String groupId, Socket socket) {
+        ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
+        chatGroup.setVisible(true);
+    }
+    
+    // Phương thức để mở cửa sổ chat với người dùng đã chọn
+    private void openChatWindow(String senderId, String receiverId, Socket socket) {
+        ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
+        chatWindow.setVisible(true);
+    }
+
+    private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Actions");
+        dialog.setSize(300, 200);
+        dialog.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
+        dialog.setModal(true); // Chặn các hành động khác
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JButton chatButton = new JButton("Chat");
+        chatButton.addActionListener(e -> {
+            if (isChatWithUser == 1) {
+                openChatWindow(userID, groupId, socket);
+            } else if (isChatWithUser == 0) {
+                openGroupChatWindow(userID, groupId, socket);
+            }
+            dialog.dispose();
+        });
+        panel.add(chatButton);
+
+        if (isChatWithUser == 0) {
+            JButton addMemberButton = new JButton("Add Member");
+            addMemberButton.addActionListener(e -> {
+                // Xử lý logic thêm thành viên vào nhóm chat
+                System.out.println("Thêm thành viên vào nhóm với groupId: " + groupId);
+                dialog.dispose();
+            });
+            panel.add(addMemberButton);
+        }
+
+        if (isChatWithUser == 1) {
+            JButton addFriendButton = new JButton("Add Friend");
+            addFriendButton.addActionListener(e -> {
+                // Xử lý logic thêm bạn bè
+                System.out.println("Thêm bạn với userID: " + userID);
+                dialog.dispose();
+            });
+            panel.add(addFriendButton);
+        }
+
+
+        dialog.add(panel);
+        dialog.setVisible(true);
+    }
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (userId == -1) {
+            showErrorDialog("User ID is not set. Please log in again.");
+            return;
+        }
+
+        if (selectedUsername == null || selectedUsername.isEmpty()) {
+            showWarningDialog("Please select a user to add as a friend.");
+            return;
+        }
+
+        try {
+            int selectedUserId = getUserId(selectedUsername);
+            if (selectedUserId == -1) {
+                showErrorDialog("Selected user does not exist.");
+                return;
+            }
+
+            if (userId == selectedUserId) {
+                showWarningDialog("You cannot create a chat group with yourself.");
+                return;
+            }
+
+            String groupName = generateGroupName(userId, selectedUserId);
+
+            if (isGroupExists(groupName, userId, selectedUserId)) {
+                String groupId = getGroupId(groupName);
+                int isChatWithUser = db.isChatWithUser(groupId);
+                showActionPanel(isChatWithUser, Integer.toString(userId), groupId, socket);
+                return;
+            }
+
+            if (isBlocked(userId, selectedUserId)) {
+                showErrorDialog("Cannot create a chat. One of the users has blocked the other.");
+                return;
+            }
+            createChatGroup(groupName, userId, selectedUserId);
+            String groupId = getGroupId(groupName);
+            int isChatWithUser = db.isChatWithUser(groupId);
+            showActionPanel(isChatWithUser, Integer.toString(userId), groupId, socket);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showErrorDialog("Error: " + e.getMessage());
+        }
+    }
+
+    // Utility methods
+
+    private int getUserId(String username) throws SQLException {
+        String query = "SELECT user_id FROM users WHERE username = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("user_id");
+                }
+            }
+        }
+        return -1; // User not found
+    }
+
+    private String getUserName(int userId) throws SQLException {
+        String query = "SELECT username FROM users WHERE user_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("username");
+                }
+            }
+        }
+        return null; // User not found
+    }
+
+    private String getGroupId(String group_name) throws SQLException {
+        String query = "SELECT group_id FROM chat_group WHERE group_name = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, group_name);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return (rs.getString("group_id"));
+                }
+            }
+        }
+        return null; // Group not found
+    }
+
+    private String generateGroupName(int userId1, int userId2) throws SQLException {
+        String name1 = getUserName(userId1);
+        String name2 = getUserName(userId2);
+        return userId1 < userId2 ? name1 + "_" + name2 : name2 + "_" + name1;
+    }
+
+    private boolean isGroupExists(String groupName, int userId1, int userId2) throws SQLException {
+        // Check if a group exists with the specified group name
+        String checkByNameQuery = "SELECT 1 FROM chat_group WHERE group_name = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(checkByNameQuery)) {
+            pstmt.setString(1, groupName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+        }
+    
+        // Check if a group exists with is_chat_with_user = 1 and contains only these two users
+        String checkByMembersQuery = 
+            "SELECT 1 FROM chat_group cg " +
+            "JOIN group_members gm1 ON cg.group_id = gm1.group_id AND gm1.user_id = ? " +
+            "JOIN group_members gm2 ON cg.group_id = gm2.group_id AND gm2.user_id = ? " +
+            "WHERE cg.is_chat_with_user = 1 " +
+            "GROUP BY cg.group_id " +
+            "HAVING COUNT(DISTINCT gm1.user_id) = 1 AND COUNT(DISTINCT gm2.user_id) = 1 AND COUNT(DISTINCT gm1.group_id) = 1";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(checkByMembersQuery)) {
+            pstmt.setInt(1, userId1);
+            pstmt.setInt(2, userId2);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
     
 
+    private boolean isBlocked(int userId1, int userId2) throws SQLException {
+        String blockCheckQuery = "SELECT 1 FROM users_friend " +
+                "WHERE (user_id, friend_id, friendship) IN ((?, ?, 'blocked'), (?, ?, 'blocked'))";
+        try (PreparedStatement pstmt = conn.prepareStatement(blockCheckQuery)) {
+            pstmt.setInt(1, userId1);
+            pstmt.setInt(2, userId2);
+            pstmt.setInt(3, userId2);
+            pstmt.setInt(4, userId1);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private void createChatGroup(String groupName, int creatorId, int otherUserId) throws SQLException {
+        String insertGroupQuery = "INSERT INTO chat_group (group_name, created_by, is_chat_with_user) VALUES (?, ?, 1)";
+        try (PreparedStatement pstmt = conn.prepareStatement(insertGroupQuery, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, groupName);
+            pstmt.setInt(2, creatorId);
+            pstmt.executeUpdate();
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int groupId = generatedKeys.getInt(1);
+                    addGroupMember(groupId, creatorId);
+                    addGroupMember(groupId, otherUserId);
+                    showInfoDialog("Chat group created successfully.");
+                }
+            }
+        }
+    }
+
+    private void addGroupMember(int groupId, int userId) throws SQLException {
+        String insertMemberQuery = "INSERT INTO group_members (group_id, user_id) VALUES (?, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(insertMemberQuery)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, userId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    // Dialog utilities
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showWarningDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void showInfoDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton19;
     private javax.swing.JButton jButton7;
     private javax.swing.JComboBox<String> jComboBox1;
@@ -255,7 +600,5 @@ public class UserFindFriend extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTable jTable3;
     private javax.swing.JTextField jTextField7;
-    private javax.swing.JToggleButton jToggleButton1;
-    private javax.swing.JToggleButton jToggleButton2;
     // End of variables declaration//GEN-END:variables
 }
