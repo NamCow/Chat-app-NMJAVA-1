@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.JOptionPane;
 import com.example.Chat.app.Users.datastructure.Message;
+import java.sql.Statement;
+
 public class DatabaseConnection {
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String DB_URL = "jdbc:mysql://localhost:3306/chat_app?zeroDateTimeBehavior=CONVERT_TO_NULL";
@@ -222,8 +224,46 @@ public class DatabaseConnection {
         }
         return result;
     }
-
-
+    public List<Message> getMessagesUser(int userId, int groupId) {
+        List<Message> messages = new ArrayList<>();
+        String query = "SELECT m.message_id, m.sender_id, m.group_id, m.message, m.sent_at " +
+                       "FROM message m " +
+                       "JOIN group_members gm ON m.group_id = gm.group_id " +
+                       "JOIN message_visibility mv ON m.message_id = mv.message_id " +
+                       "WHERE m.group_id = ? AND gm.user_id = ? AND mv.user_id = ? AND mv.visible_status = 'existed' " +
+                       "ORDER BY m.sent_at ASC";
+    
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, groupId);  
+            stmt.setInt(2, userId);   
+            stmt.setInt(3, userId);   
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int messageId = rs.getInt("message_id");
+                int senderId = rs.getInt("sender_id");
+                int groupIdFromDb = rs.getInt("group_id");
+                String messageContent = rs.getString("message");
+                LocalDateTime sentAt = rs.getTimestamp("sent_at").toLocalDateTime(); // Đọc thời gian gửi tin nhắn
+    
+                Message message = new Message(senderId, groupIdFromDb, messageContent);
+                message.setMessageId(messageId); // Gán message_id vào Message object nếu cần
+                message.setSentAt(sentAt); // Cập nhật thời gian gửi
+    
+                if (senderId == userId) {
+                    message.setSenderIsUser(true); // Thêm thông tin người gửi là userId
+                } else {
+                    message.setSenderIsUser(false); // Người gửi là người khác trong nhóm
+                }
+    
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
+    }
+    
+/* 
     public List<Message> getMessagesUser(int userId, int groupId) {
         List<Message> messages = new ArrayList<>();
         String query = "SELECT m.sender_id, m.group_id, m.message, m.sent_at " +
@@ -260,7 +300,8 @@ public class DatabaseConnection {
         }
         return messages;
     }    
-    
+        */
+    /* 
     public boolean saveMessage(int userId, int groupId, String messageContent, LocalDateTime sentAt) {
         String query = "INSERT INTO message (sender_id, group_id, message, sent_at) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connect.prepareStatement(query)) {
@@ -274,7 +315,55 @@ public class DatabaseConnection {
             e.printStackTrace();
             return false; // Lỗi khi lưu
         }
+    }*/
+    public boolean saveMessage(int userId, int groupId, String messageContent, LocalDateTime sentAt) {
+        String insertMessageQuery = "INSERT INTO message (sender_id, group_id, message, sent_at) VALUES (?, ?, ?, ?)";
+        String selectGroupMembersQuery = "SELECT user_id FROM group_members WHERE group_id = ?";
+        String insertVisibilityQuery = "INSERT INTO message_visibility (message_id, user_id, visible_status) VALUES (?, ?, ?)";
+    
+        try (
+            PreparedStatement messageStmt = connect.prepareStatement(insertMessageQuery, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement groupMembersStmt = connect.prepareStatement(selectGroupMembersQuery)
+        ) {
+            // Step 1: Insert message into the `message` table
+            messageStmt.setInt(1, userId);
+            messageStmt.setInt(2, groupId);
+            messageStmt.setString(3, messageContent);
+            messageStmt.setTimestamp(4, Timestamp.valueOf(sentAt));
+            messageStmt.executeUpdate();
+    
+            // Get the generated `message_id`
+            ResultSet generatedKeys = messageStmt.getGeneratedKeys();
+            if (!generatedKeys.next()) {
+                throw new SQLException("Failed to retrieve message_id.");
+            }
+            int messageId = generatedKeys.getInt(1);
+    
+            // Step 2: Get group members from `group_members` table
+            groupMembersStmt.setInt(1, groupId);
+            ResultSet groupMembers = groupMembersStmt.executeQuery();
+    
+            // Step 3: Insert into `message_visibility`
+            try (PreparedStatement visibilityStmt = connect.prepareStatement(insertVisibilityQuery)) {
+                while (groupMembers.next()) {
+                    int memberId = groupMembers.getInt("user_id");
+                    visibilityStmt.setInt(1, messageId);
+                    visibilityStmt.setInt(2, memberId);
+                    visibilityStmt.setString(3, "existed");
+                    visibilityStmt.executeUpdate();
+                }
+            }
+    
+            return true;
+    
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
+    
+    
+    
     public String getNamebyid (int id) {
         String query = "SELECT username FROM users WHERE user_id = ?";
         try (PreparedStatement stmt = connect.prepareStatement(query)) {
@@ -288,6 +377,8 @@ public class DatabaseConnection {
         }
         return null;
   }
+
+  /* 
   public List<Message> getGroupMessages(int userId, int groupId) {
     List<Message> messages = new ArrayList<>();
     String query = "SELECT m.message_id, m.sender_id, u.fullname AS sender_name, " +
@@ -324,6 +415,47 @@ public class DatabaseConnection {
     }
     return messages;
 }
+    */
+    public List<Message> getGroupMessages(int userId, int groupId) {
+        List<Message> messages = new ArrayList<>();
+        String query = "SELECT m.message_id, m.sender_id, u.fullname AS sender_name, " +
+                       "m.group_id, g.group_name, m.message, m.sent_at " +
+                       "FROM message m " +
+                       "JOIN users u ON m.sender_id = u.user_id " +
+                       "JOIN chat_group g ON m.group_id = g.group_id " +
+                       "JOIN group_members gm ON g.group_id = gm.group_id " +
+                       "JOIN message_visibility mv ON m.message_id = mv.message_id " +
+                       "WHERE g.group_id = ? AND gm.user_id = ? AND mv.user_id = ? AND mv.visible_status = 'existed' " +
+                       "ORDER BY m.sent_at ASC";
+    
+        try (PreparedStatement stmt = connect.prepareStatement(query)) {
+            stmt.setInt(1, groupId);  // Lọc theo groupId
+            stmt.setInt(2, userId);   // Kiểm tra quyền thành viên của userId trong nhóm
+            stmt.setInt(3, userId);   // Kiểm tra quyền hiển thị của userId trong message_visibility
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int messageId = rs.getInt("message_id");
+                int senderId = rs.getInt("sender_id");
+                String senderName = rs.getString("sender_name");
+                int groupIdFromDb = rs.getInt("group_id");
+                // String groupName = rs.getString("group_name");
+                String messageContent = rs.getString("message");
+                LocalDateTime sentAt = rs.getTimestamp("sent_at").toLocalDateTime();
+    
+                Message message = new Message(senderId, groupIdFromDb, messageContent);
+                message.setMessageId(messageId);
+                message.setSenderName(senderName);
+                // message.setGroupName(groupName);
+                message.setSentAt(sentAt);
+    
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
+    }
+    
 public List<String> getFriendshipStatuses(int userId, int groupId) {
     List<String> friendshipStatuses = new ArrayList<>();
     String query = "SELECT " +
@@ -392,6 +524,26 @@ public void reportSpamUsers(int userId, int groupId) {
         e.printStackTrace();
     }
 }
+public boolean deleteChatHistory(int userId, int groupId) {
+    String query = "UPDATE message_visibility " +
+                   "SET visible_status = 'hidden' " +
+                   "WHERE user_id = ? AND message_id IN (" +
+                   "    SELECT m.message_id " +
+                   "    FROM message m " +
+                   "    WHERE m.group_id = ?" +
+                   ")";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, userId); // user_id
+        stmt.setInt(2, groupId); // group_id
+
+        int rowsUpdated = stmt.executeUpdate();
+        return rowsUpdated > 0; // Trả về true nếu có bản ghi được cập nhật
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false; // Trả về false nếu có lỗi
+    }
+}
+
 
 
 }

@@ -47,6 +47,7 @@ public class ChatGroup extends JFrame {
         messageField = new JTextField(30);
         sendButton = new JButton("Send");
 
+
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,8 +76,8 @@ public class ChatGroup extends JFrame {
     }
 
     private void loadMessages() {
-        int senderIDInt = Integer.parseInt(userID); // Chuyển senderId từ String sang int
-        int groupIdInt = Integer.parseInt(groupID); // Chuyển groupId từ String sang int
+        int senderIDInt = Integer.parseInt(userID); 
+        int groupIdInt = Integer.parseInt(groupID); 
 
         // Gọi phương thức getGroupMessages để lấy danh sách tin nhắn
         List<Message> messages = db.getGroupMessages(senderIDInt, groupIdInt);
@@ -85,15 +86,17 @@ public class ChatGroup extends JFrame {
         for (Message message : messages) {
             if (message.getSenderId() == senderIDInt) { // Nếu người gửi là chính người dùng
                 chatArea.append("You: " + message.getMessageContent() + "\n");
-            } else { // Nếu người gửi là thành viên khác trong nhóm
-                chatArea.append(message.getSenderName() + ": " + message.getMessageContent() + "\n");
+            } else {
+                 // Nếu người gửi là thành viên khác trong nhóm
+                 String senderName = db.getNamebyid(message.getSenderId());
+                chatArea.append(senderName + ": " + message.getMessageContent() + "\n");
             }
         }
     }
     private void connectToServer() {
         try {
             // Kết nối đến server
-            socket = new Socket("localhost", 12345);  // Thay localhost bằng IP của server nếu cần
+            socket = new Socket("localhost", 12345);  
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
