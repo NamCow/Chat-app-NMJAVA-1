@@ -1,4 +1,5 @@
 package com.example.Chat.app.Users.userchatapp;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,6 +15,7 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
+
 public class ChatWindow extends JFrame {
     private String userID;
     private String groupID;
@@ -26,6 +28,7 @@ public class ChatWindow extends JFrame {
     private PrintWriter out;
     private BufferedReader in;
     private JButton spamButton;
+    private JButton deleteHistoryButton;
 
     public ChatWindow(String userID, String groupID, Socket socket) {
         this.userID = userID;
@@ -49,13 +52,15 @@ public class ChatWindow extends JFrame {
         messageField = new JTextField(30);
         sendButton = new JButton("Send");
 
-        /*sendButton.addActionListener((ActionEvent e) -> {
-            String messageContent = messageField.getText();
-            if (!messageContent.isEmpty()) {
-                sendMessage(messageContent);  
-                messageField.setText("");    
-            }
-        });*/
+        /*
+         * sendButton.addActionListener((ActionEvent e) -> {
+         * String messageContent = messageField.getText();
+         * if (!messageContent.isEmpty()) {
+         * sendMessage(messageContent);
+         * messageField.setText("");
+         * }
+         * });
+         */
 
         spamButton = new JButton("Spam");
         spamButton.addActionListener(new ActionListener() {
@@ -63,47 +68,76 @@ public class ChatWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 int userIdInt = Integer.parseInt(userID);
                 int groupIdInt = Integer.parseInt(groupID);
-                
+
                 // Call the reportSpamUsers method when Spam button is clicked
                 db.reportSpamUsers(userIdInt, groupIdInt);
                 JOptionPane.showMessageDialog(null, "Spam reports have been sent.");
             }
         });
+        
+        deleteHistoryButton = new JButton("Delete Chat History");
+        deleteHistoryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int userIdInt = Integer.parseInt(userID);
+                int groupIdInt = Integer.parseInt(groupID);
+
+                int confirm = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to delete your chat history?",
+                        "Confirm Deletion",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    boolean success = db.deleteChatHistory(userIdInt, groupIdInt);
+                    if (success) {
+                        JOptionPane.showMessageDialog(null, "Chat history deleted successfully.");
+                        chatArea.setText(""); // Xóa giao diện chat
+                        loadMessages(); // Tải lại tin nhắn
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed to delete chat history.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
         sendButton.addActionListener((ActionEvent e) -> {
             String messageContent = messageField.getText();
             int userIdInt = Integer.parseInt(userID);
             int groupIdInt = Integer.parseInt(groupID);
             List<String> friendshipStatuses = db.getFriendshipStatuses(userIdInt, groupIdInt);
-        
+
             // Kiểm tra nếu có bất kỳ trạng thái nào là "Blocked"
             if (friendshipStatuses.contains("blocked")) {
-                // Nếu có trạng thái "Blocked", không cho phép gửi tin nhắn và hiển thị thông báo
+                // Nếu có trạng thái "Blocked", không cho phép gửi tin nhắn và hiển thị thông
+                // báo
                 JOptionPane.showMessageDialog(null, "You are blocked and cannot send messages.");
             } else if (!messageContent.isEmpty()) {
                 // Nếu không bị Blocked, tiếp tục gửi tin nhắn
-                sendMessage(messageContent);  
-                messageField.setText("");    
+                sendMessage(messageContent);
+                messageField.setText("");
             }
         });
-        
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
         bottomPanel.add(sendButton);
         bottomPanel.add(spamButton);
+        bottomPanel.add(deleteHistoryButton);
         // Thêm các panel vào cửa sổ
         add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-        
+
         // Cài đặt kích thước cửa sổ
         pack();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
         setVisible(true);
     }
+
     private void connectToServer() {
         try {
             // Kết nối đến server
-            socket = new Socket("localhost", 12345);  // Thay localhost bằng IP của server nếu cần
+            socket = new Socket("localhost", 12345); // Thay localhost bằng IP của server nếu cần
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -132,25 +166,27 @@ public class ChatWindow extends JFrame {
     private void sendMessage(String messageContent) {
         // Định dạng tin nhắn: "senderId|groupId|messageContent"
         String message = userID + "|" + groupID + "|" + messageContent;
-        out.println(message);  // Gửi tin nhắn tới server
-        
+        out.println(message); // Gửi tin nhắn tới server
+
         chatArea.append("You: " + messageContent + "\n");
-        
+
         int userIdInt = Integer.parseInt(userID);
         int groupIdInt = Integer.parseInt(groupID);
-        LocalDateTime sentAt = LocalDateTime.now().plusHours(7); 
+        LocalDateTime sentAt = LocalDateTime.now().plusHours(7);
         boolean success = db.saveMessage(userIdInt, groupIdInt, messageContent, sentAt);
 
         if (!success) {
-            JOptionPane.showMessageDialog(this, "Failed to save message to database.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to save message to database.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
+
     private void loadMessages() {
         int userIdInt = Integer.parseInt(userID);
         int groupIdInt = Integer.parseInt(groupID);
         // Lấy danh sách tin nhắn
         List<Message> messages = db.getMessagesUser(userIdInt, groupIdInt);
-        
+
         // Duyệt qua các tin nhắn và thêm vào chatArea
         for (Message message : messages) {
             if (message.isSenderIsUser()) {
@@ -158,13 +194,11 @@ public class ChatWindow extends JFrame {
                 chatArea.append("You: " + message.getMessageContent() + "\n");
             } else {
                 // Tin nhắn từ người khác, hiển thị ở bên trái
-                
+
                 String senderName = db.getNamebyid(message.getSenderId());
                 chatArea.append(senderName + ": " + message.getMessageContent() + "\n");
             }
         }
     }
-    
-    
-    
+
 }
