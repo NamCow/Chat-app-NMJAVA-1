@@ -328,8 +328,8 @@ public class UserFindFriend extends javax.swing.JPanel {
                         // Insert the new friendship request
                         String insertQuery = "INSERT INTO users_friend (user_id, friend_id, friendship, request_at) VALUES (?, ?, ?, ?)";
                         try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                            insertStmt.setInt(1, userId);
-                            insertStmt.setInt(2, selectedUserId);
+                            insertStmt.setInt(1, selectedUserId);
+                            insertStmt.setInt(2, userId);
                             insertStmt.setString(3, "pending");
                             insertStmt.setDate(4, new java.sql.Date(System.currentTimeMillis()));
 
@@ -355,63 +355,10 @@ public class UserFindFriend extends javax.swing.JPanel {
         }
     }
 
-    //Socket for chat 
-
-    private void openGroupChatWindow(String userId, String groupId, Socket socket) {
-        ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
-        chatGroup.setVisible(true);
-    }
-    
-    // Phương thức để mở cửa sổ chat với người dùng đã chọn
+    // Socket for chat
     private void openChatWindow(String senderId, String receiverId, Socket socket) {
         ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
         chatWindow.setVisible(true);
-    }
-
-    private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
-        JDialog dialog = new JDialog();
-        dialog.setTitle("Actions");
-        dialog.setSize(300, 200);
-        dialog.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
-        dialog.setModal(true); // Chặn các hành động khác
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        JButton chatButton = new JButton("Chat");
-        chatButton.addActionListener(e -> {
-            if (isChatWithUser == 1) {
-                openChatWindow(userID, groupId, socket);
-            } else if (isChatWithUser == 0) {
-                openGroupChatWindow(userID, groupId, socket);
-            }
-            dialog.dispose();
-        });
-        panel.add(chatButton);
-
-        if (isChatWithUser == 0) {
-            JButton addMemberButton = new JButton("Add Member");
-            addMemberButton.addActionListener(e -> {
-                // Xử lý logic thêm thành viên vào nhóm chat
-                System.out.println("Thêm thành viên vào nhóm với groupId: " + groupId);
-                dialog.dispose();
-            });
-            panel.add(addMemberButton);
-        }
-
-        if (isChatWithUser == 1) {
-            JButton addFriendButton = new JButton("Add Friend");
-            addFriendButton.addActionListener(e -> {
-                // Xử lý logic thêm bạn bè
-                System.out.println("Thêm bạn với userID: " + userID);
-                dialog.dispose();
-            });
-            panel.add(addFriendButton);
-        }
-
-
-        dialog.add(panel);
-        dialog.setVisible(true);
     }
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -441,8 +388,7 @@ public class UserFindFriend extends javax.swing.JPanel {
 
             if (isGroupExists(groupName, userId, selectedUserId)) {
                 String groupId = getGroupId(groupName);
-                int isChatWithUser = db.isChatWithUser(groupId);
-                showActionPanel(isChatWithUser, Integer.toString(userId), groupId, socket);
+                openChatWindow(Integer.toString(userId), groupId, socket);
                 return;
             }
 
@@ -452,8 +398,7 @@ public class UserFindFriend extends javax.swing.JPanel {
             }
             createChatGroup(groupName, userId, selectedUserId);
             String groupId = getGroupId(groupName);
-            int isChatWithUser = db.isChatWithUser(groupId);
-            showActionPanel(isChatWithUser, Integer.toString(userId), groupId, socket);
+            openChatWindow(Integer.toString(userId), groupId, socket);
         } catch (SQLException e) {
             e.printStackTrace();
             showErrorDialog("Error: " + e.getMessage());
@@ -518,16 +463,16 @@ public class UserFindFriend extends javax.swing.JPanel {
                 }
             }
         }
-    
-        // Check if a group exists with is_chat_with_user = 1 and contains only these two users
-        String checkByMembersQuery = 
-            "SELECT 1 FROM chat_group cg " +
-            "JOIN group_members gm1 ON cg.group_id = gm1.group_id AND gm1.user_id = ? " +
-            "JOIN group_members gm2 ON cg.group_id = gm2.group_id AND gm2.user_id = ? " +
-            "WHERE cg.is_chat_with_user = 1 " +
-            "GROUP BY cg.group_id " +
-            "HAVING COUNT(DISTINCT gm1.user_id) = 1 AND COUNT(DISTINCT gm2.user_id) = 1 AND COUNT(DISTINCT gm1.group_id) = 1";
-        
+
+        // Check if a group exists with is_chat_with_user = 1 and contains only these
+        // two users
+        String checkByMembersQuery = "SELECT 1 FROM chat_group cg " +
+                "JOIN group_members gm1 ON cg.group_id = gm1.group_id AND gm1.user_id = ? " +
+                "JOIN group_members gm2 ON cg.group_id = gm2.group_id AND gm2.user_id = ? " +
+                "WHERE cg.is_chat_with_user = 1 " +
+                "GROUP BY cg.group_id " +
+                "HAVING COUNT(DISTINCT gm1.user_id) = 1 AND COUNT(DISTINCT gm2.user_id) = 1 AND COUNT(DISTINCT gm1.group_id) = 1";
+
         try (PreparedStatement pstmt = conn.prepareStatement(checkByMembersQuery)) {
             pstmt.setInt(1, userId1);
             pstmt.setInt(2, userId2);
@@ -536,7 +481,6 @@ public class UserFindFriend extends javax.swing.JPanel {
             }
         }
     }
-    
 
     private boolean isBlocked(int userId1, int userId2) throws SQLException {
         String blockCheckQuery = "SELECT 1 FROM users_friend " +
