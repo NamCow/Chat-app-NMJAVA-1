@@ -279,7 +279,7 @@ public class UserInfor extends javax.swing.JPanel {
             return;
         }
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try {
             if (conn == null) {
                 JOptionPane.showMessageDialog(this, "Database connection is not available.", "Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -339,7 +339,7 @@ public class UserInfor extends javax.swing.JPanel {
             return;
         }
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try{
             if (conn == null) {
                 JOptionPane.showMessageDialog(this, "Database connection is not available.", "Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -421,7 +421,7 @@ public class UserInfor extends javax.swing.JPanel {
             return;
         }
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try {
             if (conn == null)
                 return;
 

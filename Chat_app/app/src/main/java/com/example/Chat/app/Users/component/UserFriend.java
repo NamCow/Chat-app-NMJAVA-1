@@ -40,16 +40,18 @@ public class UserFriend extends javax.swing.JPanel {
     private void loadDataTable1() {
         // Query to fetch friends with the specified conditions
         String query = """
-                    SELECT u.username,
-                           CASE
-                               WHEN u.status = 'active' THEN 'online'
-                               ELSE 'offline'
-                           END AS status
-                    FROM users_friend uf
-                    JOIN users u ON uf.friend_id = u.user_id
-                    WHERE uf.user_id = ? AND uf.friendship = 'friends'
-                """;
-
+                SELECT u.username,
+                       CASE
+                           WHEN u.status = 'active' THEN 'online'
+                           ELSE 'offline'
+                       END AS status
+                FROM users_friend uf
+                JOIN users u ON 
+                    (uf.friend_id = u.user_id AND uf.user_id = ?)
+                    OR (uf.user_id = u.user_id AND uf.friend_id = ?)
+                WHERE uf.friendship = 'friends'
+            """;
+    
         // Append the current filter query (WHERE clause) if it exists
         if (!currentFilterQuery1.isEmpty()) {
             if (query.contains("WHERE")) {
@@ -58,53 +60,50 @@ public class UserFriend extends javax.swing.JPanel {
                 query += " " + currentFilterQuery1;
             }
         }
-
+    
         // Check the checkbox state and filter by status
         if (jCheckBox1.isSelected()) {
             query += " AND u.status = 'active'"; // Filter for online users
         }
-
+    
         try (
                 PreparedStatement pstmt = conn != null ? conn.prepareStatement(query) : null) {
-
+    
             if (pstmt == null) {
                 JOptionPane.showMessageDialog(this, "Failed to establish a database connection.", "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            // Set the current user ID
-            pstmt.setInt(1, userId);
-
+    
+            // Set the current user ID for both cases
+            pstmt.setInt(1, userId); // Current user as initiator
+            pstmt.setInt(2, userId); // Current user as recipient
+    
             try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs == null) {
-                    JOptionPane.showMessageDialog(this, "No friends found.", "Information",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    return;
-                }
-
+    
                 // Get the table model
                 DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-
+    
                 // Clear any existing data
                 model.setRowCount(0);
-
+    
                 // Populate the table with data
                 while (rs.next()) {
                     String username = rs.getString("username");
                     String status = rs.getString("status");
-
+    
                     // Add data to the table
                     model.addRow(new Object[] { username, status });
                 }
             }
-
+    
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+    
 
     private void loadDataTable2() {
         // Query to fetch friends with the specified conditions
@@ -230,6 +229,11 @@ public class UserFriend extends javax.swing.JPanel {
         jCheckBox1.addActionListener(evt -> loadDataTable1());
 
         jButton20.setText("Create group");
+        jButton20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton20ActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -476,9 +480,10 @@ public class UserFriend extends javax.swing.JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             String deleteQuery = """
                 DELETE FROM users_friend
-                WHERE user_id = ? AND friend_id = (
-                    SELECT user_id FROM users WHERE username = ?
-                )
+                WHERE 
+                    (user_id = ? AND friend_id = (SELECT user_id FROM users WHERE username = ?))
+                    OR 
+                    (friend_id = ? AND user_id = (SELECT user_id FROM users WHERE username = ?))
             """;
     
             try (
@@ -490,8 +495,10 @@ public class UserFriend extends javax.swing.JPanel {
                 }
     
                 // Set parameters for the query
-                pstmt.setInt(1, userId); // Current user's ID
-                pstmt.setString(2, selectedUsername); // Friend's username
+                pstmt.setInt(1, userId); // Current user's ID as user_id
+                pstmt.setString(2, selectedUsername); // Friend's username for first condition
+                pstmt.setInt(3, userId); // Current user's ID as friend_id
+                pstmt.setString(4, selectedUsername); // Friend's username for reciprocal condition
     
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0) {
@@ -506,6 +513,7 @@ public class UserFriend extends javax.swing.JPanel {
             }
         }
     }
+    
 
     private void jButton16ActionPerformed(java.awt.event.ActionEvent evt) {
         if (selectedUsername == null) {
@@ -519,9 +527,10 @@ public class UserFriend extends javax.swing.JPanel {
             String updateQuery = """
                 UPDATE users_friend
                 SET friendship = 'blocked'
-                WHERE user_id = ? AND friend_id = (
-                    SELECT user_id FROM users WHERE username = ?
-                )
+                WHERE 
+                    (user_id = ? AND friend_id = (SELECT user_id FROM users WHERE username = ?))
+                    OR 
+                    (friend_id = ? AND user_id = (SELECT user_id FROM users WHERE username = ?))
             """;
     
             try (
@@ -533,8 +542,10 @@ public class UserFriend extends javax.swing.JPanel {
                 }
     
                 // Set parameters for the query
-                pstmt.setInt(1, userId); // Current user's ID
-                pstmt.setString(2, selectedUsername); // Friend's username
+                pstmt.setInt(1, userId); // Current user's ID as user_id
+                pstmt.setString(2, selectedUsername); // Selected username
+                pstmt.setInt(3, userId); // Current user's ID as friend_id
+                pstmt.setString(4, selectedUsername); // Selected username again for the reciprocal check
     
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0) {
@@ -549,6 +560,104 @@ public class UserFriend extends javax.swing.JPanel {
             }
         }
     }
+    
+
+    private int getUserId(String username) throws SQLException {
+        String query = "SELECT user_id FROM users WHERE username = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("user_id");
+                }
+            }
+        }
+        return -1; // User not found
+    }
+
+    private void jButton20ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedUsername == null) {
+            JOptionPane.showMessageDialog(this, "Please select a user to create a group.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        // Prompt for the new group name
+        String groupName = JOptionPane.showInputDialog(this, "Enter the name of the new group:", "Create Group", JOptionPane.PLAIN_MESSAGE);
+        if (groupName == null || groupName.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Group creation canceled or invalid group name entered.", "Cancelled", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        String insertGroupQuery = "INSERT INTO chat_group (group_name, created_by, is_chat_with_user) VALUES (?, ?, 0)";
+        String insertMemberQuery = "INSERT INTO group_members (group_id, user_id, is_admin) VALUES (?, ?, ?)";
+    
+        try {
+            if (conn == null) {
+                JOptionPane.showMessageDialog(this, "Failed to establish a database connection.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+    
+            conn.setAutoCommit(false); // Begin transaction
+    
+            // Insert into chat_group
+            int groupId;
+            try (PreparedStatement pstmtGroup = conn.prepareStatement(insertGroupQuery, Statement.RETURN_GENERATED_KEYS)) {
+                pstmtGroup.setString(1, groupName);
+                pstmtGroup.setInt(2, userId); // Created by this user
+                pstmtGroup.executeUpdate();
+    
+                // Retrieve the generated group_id
+                try (ResultSet generatedKeys = pstmtGroup.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        groupId = generatedKeys.getInt(1);
+                    } else {
+                        throw new SQLException("Failed to retrieve group_id.");
+                    }
+                }
+            }
+    
+            // Insert the current user as admin
+            try (PreparedStatement pstmtMember = conn.prepareStatement(insertMemberQuery)) {
+                pstmtMember.setInt(1, groupId);
+                pstmtMember.setInt(2, userId); // Current user's ID
+                pstmtMember.setString(3, "yes"); // Admin
+                pstmtMember.executeUpdate();
+
+                int selectedUserId = getUserId(selectedUsername);
+                // Insert the selected user as a member
+                pstmtMember.setInt(1, groupId);
+                pstmtMember.setInt(2, selectedUserId); // Selected user's ID
+                pstmtMember.setString(3, "no"); // Not admin
+                pstmtMember.executeUpdate();
+            }
+    
+            conn.commit(); // Commit transaction
+    
+            JOptionPane.showMessageDialog(this, "Group created successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadDataTable1(); // Refresh table to reflect the new group
+        } catch (SQLException e) {
+            try {
+                if (conn != null) {
+                    conn.rollback(); // Rollback transaction on error
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error creating group: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true); // Reset auto-commit
+                }
+            } catch (SQLException resetEx) {
+                resetEx.printStackTrace();
+            }
+        }
+    }
+    
+
+    //Add Friend List
 
     private void jButton17ActionPerformed(java.awt.event.ActionEvent evt) {
         if (selectedUsername2 == null) {
