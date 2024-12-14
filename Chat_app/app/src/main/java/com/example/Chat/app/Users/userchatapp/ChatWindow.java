@@ -25,6 +25,7 @@ public class ChatWindow extends JFrame {
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
+    private JButton spamButton;
 
     public ChatWindow(String userID, String groupID, Socket socket) {
         this.userID = userID;
@@ -48,22 +49,52 @@ public class ChatWindow extends JFrame {
         messageField = new JTextField(30);
         sendButton = new JButton("Send");
 
-        sendButton.addActionListener((ActionEvent e) -> {
+        /*sendButton.addActionListener((ActionEvent e) -> {
             String messageContent = messageField.getText();
             if (!messageContent.isEmpty()) {
                 sendMessage(messageContent);  
                 messageField.setText("");    
             }
+        });*/
+
+        spamButton = new JButton("Spam");
+        spamButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int userIdInt = Integer.parseInt(userID);
+                int groupIdInt = Integer.parseInt(groupID);
+                
+                // Call the reportSpamUsers method when Spam button is clicked
+                db.reportSpamUsers(userIdInt, groupIdInt);
+                JOptionPane.showMessageDialog(null, "Spam reports have been sent.");
+            }
         });
+        sendButton.addActionListener((ActionEvent e) -> {
+            String messageContent = messageField.getText();
+            int userIdInt = Integer.parseInt(userID);
+            int groupIdInt = Integer.parseInt(groupID);
+            List<String> friendshipStatuses = db.getFriendshipStatuses(userIdInt, groupIdInt);
+        
+            // Kiểm tra nếu có bất kỳ trạng thái nào là "Blocked"
+            if (friendshipStatuses.contains("blocked")) {
+                // Nếu có trạng thái "Blocked", không cho phép gửi tin nhắn và hiển thị thông báo
+                JOptionPane.showMessageDialog(null, "You are blocked and cannot send messages.");
+            } else if (!messageContent.isEmpty()) {
+                // Nếu không bị Blocked, tiếp tục gửi tin nhắn
+                sendMessage(messageContent);  
+                messageField.setText("");    
+            }
+        });
+        
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
         bottomPanel.add(sendButton);
-
+        bottomPanel.add(spamButton);
         // Thêm các panel vào cửa sổ
         add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-
+        
         // Cài đặt kích thước cửa sổ
         pack();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình

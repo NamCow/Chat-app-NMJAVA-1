@@ -156,7 +156,7 @@ public class DatabaseConnection {
                        "AND (cg.is_chat_with_user = 0 " +
                        "     OR (cg.is_chat_with_user = 1 AND " +
                        "         (uf.friendship IS NULL OR uf.friendship != 'blocked')))";
-                       System.out.println(query);
+                       //System.out.println(query);
                        try (PreparedStatement stmt = connect.prepareStatement(query)) {
             
 
@@ -324,4 +324,74 @@ public class DatabaseConnection {
     }
     return messages;
 }
+public List<String> getFriendshipStatuses(int userId, int groupId) {
+    List<String> friendshipStatuses = new ArrayList<>();
+    String query = "SELECT " +
+                   "    gm.user_id AS member_id, " +
+                   "    CASE " +
+                   "        WHEN uf.friendship = 'blocked' THEN 'blocked' " +
+                   "        WHEN uf.friendship IS NULL THEN 'no relationship' " +
+                   "        ELSE uf.friendship " +
+                   "    END AS friendship_status " +
+                   "FROM group_members gm " +
+                   "LEFT JOIN users_friend uf " +
+                   "    ON (uf.user_id = ? AND uf.friend_id = gm.user_id) " +
+                   "    OR (uf.friend_id = ? AND uf.user_id = gm.user_id) " +
+                   "WHERE gm.group_id = ? AND gm.user_id != ?";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, userId);
+        stmt.setInt(2, userId);
+        stmt.setInt(3, groupId);
+        stmt.setInt(4, userId);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            String friendshipStatus = rs.getString("friendship_status");
+            friendshipStatuses.add(friendshipStatus);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return friendshipStatuses;
+}
+public void reportSpamUsers(int userId, int groupId) {
+    String selectMembersQuery = "SELECT user_id FROM group_members WHERE group_id = ? AND user_id != ?";
+    String insertSpamQuery = "INSERT INTO spam_list (report_id, report_by, report_user, report_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+    String getMaxReportIdQuery = "SELECT MAX(report_id) FROM spam_list";
+
+    try (PreparedStatement selectStmt = connect.prepareStatement(selectMembersQuery);
+         PreparedStatement getMaxReportIdStmt = connect.prepareStatement(getMaxReportIdQuery)) {
+
+        // Truy vấn các thành viên trong nhóm
+        selectStmt.setInt(1, groupId);
+        selectStmt.setInt(2, userId);
+        
+        ResultSet rs = selectStmt.executeQuery();
+
+        ResultSet maxReportIdRs = getMaxReportIdStmt.executeQuery();
+        int nextReportId = 1; // Mặc định là 1 nếu không có bản ghi nào
+        if (maxReportIdRs.next()) {
+            nextReportId = maxReportIdRs.getInt(1) + 1;  // Tăng giá trị report_id
+        }
+
+        try (PreparedStatement insertStmt = connect.prepareStatement(insertSpamQuery)) {
+            // Chèn các thành viên vào bảng spam_list
+            while (rs.next()) {
+                int reportUserId = rs.getInt("user_id");
+
+                // Chèn dữ liệu vào bảng spam_list với report_id mới
+                insertStmt.setInt(1, nextReportId);    // report_id tự tăng
+                insertStmt.setInt(2, userId);          // report_by là userId
+                insertStmt.setInt(3, reportUserId);    // report_user là thành viên trong nhóm
+                insertStmt.executeUpdate();
+                
+                nextReportId++; // Tăng giá trị report_id cho lần chèn tiếp theo
+            }
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+
 }
