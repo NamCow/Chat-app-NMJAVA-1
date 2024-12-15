@@ -37,7 +37,7 @@ public class UserUI extends javax.swing.JFrame {
         updateUserList();
         userInfor1.setId(userID);
         userFriend2.setId(userID);
-        userFindFriend2.setId(userID, socket);
+        userFindFriend2.setId(userID, socket, userChatFriend2, jTabbedPane2);
         userChatFriend2.setId(userID, socket);
     }
 

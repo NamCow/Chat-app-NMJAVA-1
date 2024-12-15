@@ -270,7 +270,7 @@ public class UserChatFriend extends javax.swing.JPanel {
         });
     }
 
-    private void setPanel(JPanel panel) {
+    public void setPanel(JPanel panel) {
         jPanel1.removeAll(); // Clear existing content
         jPanel1.setLayout(new BorderLayout());
         jPanel1.add(panel, BorderLayout.CENTER); // Add new panel

@@ -11,11 +11,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.table.DefaultTableModel;
 import java.net.Socket;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
-import com.example.Chat.app.Users.userchatapp.ChatWindow;
+import com.example.Chat.app.Users.component.chat.ChatWindow;;
 
 /**
  *
@@ -27,6 +28,8 @@ public class UserFindFriend extends javax.swing.JPanel {
     DatabaseConnection db = DatabaseConnection.getInstance();
     Connection conn = DatabaseConnection.getConnection();
     private Socket socket;
+    private UserChatFriend userChatFriend;
+    private JTabbedPane tabbedPane;
 
     /**
      * Creates new form UserFindFriend
@@ -35,9 +38,11 @@ public class UserFindFriend extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setId(String userId, Socket socket) {
+    public void setId(String userId, Socket socket, UserChatFriend userChatFriend, JTabbedPane tabbedPane) {
         this.userId = Integer.parseInt(userId);
         this.socket = socket;
+        this.userChatFriend = userChatFriend;
+        this.tabbedPane = tabbedPane;
     }
 
     /**
@@ -337,8 +342,18 @@ public class UserFindFriend extends javax.swing.JPanel {
     // Socket for chat
     private void openChatWindow(String senderId, String receiverId, Socket socket) {
         ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
-        chatWindow.setVisible(true);
+        userChatFriend.setPanel(chatWindow); // Switch to UserChatFriend's JPanel1
+    
+        if (tabbedPane != null) {
+            // Assume the UserChatFriend tab is at index 1, adjust index as necessary
+            int userChatFriendTabIndex = tabbedPane.indexOfComponent(userChatFriend);
+            if (userChatFriendTabIndex != -1) {
+                tabbedPane.setSelectedIndex(userChatFriendTabIndex); // Switch to UserChatFriend tab
+            }
+        }
     }
+    
+    
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         if (userId == -1) {
