@@ -36,9 +36,9 @@ public class UserUI extends javax.swing.JFrame {
         addMouseListenerToList();
         updateUserList();
         userInfor1.setId(userID);
-        userFriend1.setId(userID);
-        userFindFriend1.setId(userID, socket);
-        userChatFriend1.setId(userID, socket);
+        userFriend2.setId(userID);
+        userFindFriend2.setId(userID, socket);
+        userChatFriend2.setId(userID, socket);
     }
 
     /**
@@ -75,10 +75,10 @@ public class UserUI extends javax.swing.JFrame {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        userFriend1 = new com.example.Chat.app.Users.component.UserFriend();
-        userFindFriend1 = new com.example.Chat.app.Users.component.UserFindFriend();
+        userFriend2 = new com.example.Chat.app.Users.component.UserFriend();
+        userFindFriend2 = new com.example.Chat.app.Users.component.UserFindFriend();
         userInfor1 = new com.example.Chat.app.Users.component.UserInfor();
-        userChatFriend1 = new com.example.Chat.app.Users.component.UserChatFriend();
+        userChatFriend2 = new com.example.Chat.app.Users.component.UserChatFriend();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -89,7 +89,7 @@ public class UserUI extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 596, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -285,18 +285,18 @@ public class UserUI extends javax.swing.JFrame {
         );
 
         jTabbedPane2.addTab("CHAT FRIENDS", jPanel3);
-        jTabbedPane2.addTab("FRIENDS", userFriend1);
-        jTabbedPane2.addTab("FIND FRIENDS", userFindFriend1);
+        jTabbedPane2.addTab("FRIENDS", userFriend2);
+        jTabbedPane2.addTab("FIND FRIENDS", userFindFriend2);
         jTabbedPane2.addTab("INFORMATION", userInfor1);
-        jTabbedPane2.addTab("CHAT", userChatFriend1);
+        jTabbedPane2.addTab("CHAT", userChatFriend2);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 599, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 3, Short.MAX_VALUE))
+                .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -311,9 +311,9 @@ public class UserUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 602, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 804, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -567,9 +567,9 @@ public class UserUI extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
-    private com.example.Chat.app.Users.component.UserChatFriend userChatFriend1;
-    private com.example.Chat.app.Users.component.UserFindFriend userFindFriend1;
-    private com.example.Chat.app.Users.component.UserFriend userFriend1;
+    private com.example.Chat.app.Users.component.UserChatFriend userChatFriend2;
+    private com.example.Chat.app.Users.component.UserFindFriend userFindFriend2;
+    private com.example.Chat.app.Users.component.UserFriend userFriend2;
     private com.example.Chat.app.Users.component.UserInfor userInfor1;
     // End of variables declaration//GEN-END:variables
 }
