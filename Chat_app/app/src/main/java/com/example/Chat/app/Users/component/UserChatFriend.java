@@ -303,7 +303,6 @@ public class UserChatFriend extends javax.swing.JPanel {
         if (selectedGroupId != null) {
             int isChatWithUser = db.isChatWithUser(selectedGroupId);
 
-            // Mở thẳng cửa sổ chat phù hợp
             if (isChatWithUser == 1) {
                 // Open User Chat
                 openChatWindow(Integer.toString(userId), selectedGroupId, socket);
