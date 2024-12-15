@@ -74,7 +74,7 @@ public class ChatWindow extends JFrame {
                 JOptionPane.showMessageDialog(null, "Spam reports have been sent.");
             }
         });
-        
+
         deleteHistoryButton = new JButton("Delete Chat History");
         deleteHistoryButton.addActionListener(new ActionListener() {
             @Override
@@ -119,6 +119,19 @@ public class ChatWindow extends JFrame {
             }
         });
 
+        JTextField searchField = new JTextField(20); // Ô tìm kiếm
+        JButton searchButton = new JButton("Search"); // Nút tìm kiếm
+        searchButton.addActionListener(e -> {
+            String searchText = searchField.getText();
+            if (!searchText.isEmpty()) {
+                searchInChatArea(searchText); // Gọi phương thức tìm kiếm
+            }
+        });
+
+        JPanel searchPanel = new JPanel(); // Tạo panel chứa ô tìm kiếm và nút
+        searchPanel.add(new JLabel("Search:"));
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
         bottomPanel.add(sendButton);
@@ -127,7 +140,7 @@ public class ChatWindow extends JFrame {
         // Thêm các panel vào cửa sổ
         add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-
+        add(searchPanel, BorderLayout.NORTH);
         // Cài đặt kích thước cửa sổ
         pack();
         setLocationRelativeTo(null); // Đặt cửa sổ ở giữa màn hình
@@ -149,7 +162,7 @@ public class ChatWindow extends JFrame {
                 try {
                     String message;
                     while ((message = in.readLine()) != null) {
-                        // Hiển thị tin nhắn trong chatArea
+
                         chatArea.append(message + "\n");
                     }
                 } catch (IOException e) {
@@ -198,6 +211,25 @@ public class ChatWindow extends JFrame {
                 String senderName = db.getNamebyid(message.getSenderId());
                 chatArea.append(senderName + ": " + message.getMessageContent() + "\n");
             }
+        }
+    }
+
+    private void searchInChatArea(String searchText) {
+        String content = chatArea.getText();
+        int index = content.indexOf(searchText);
+
+        if (index != -1) {
+            try {
+
+                chatArea.setCaretPosition(index);
+                chatArea.requestFocusInWindow();
+
+                chatArea.select(index, index + searchText.length());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Text not found.");
         }
     }
 
