@@ -543,7 +543,66 @@ public boolean deleteChatHistory(int userId, int groupId) {
         return false; // Trả về false nếu có lỗi
     }
 }
+public List<Integer> getGroupIdsByMessage(int userId, String message) {
+    List<Integer> groupIds = new ArrayList<>();
+    String query = "SELECT DISTINCT g.group_id " +
+                   "FROM chat_group g " +
+                   "JOIN group_members gm ON g.group_id = gm.group_id " +
+                   "JOIN message m ON g.group_id = m.group_id " +
+                   "JOIN message_visibility mv ON m.message_id = mv.message_id " +
+                   "WHERE gm.user_id = ? " +
+                   "  AND mv.user_id = ? " +
+                   "  AND mv.visible_status = 'existed' " +
+                   "  AND m.message LIKE ?";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, userId);
+        stmt.setInt(2, userId);
+        stmt.setString(3, "%" + message + "%");
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            groupIds.add(rs.getInt("group_id"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return groupIds;
+}
 
+public List<String> getGroupNamesByGroupId(int groupId) {
+    List<String> groupNames = new ArrayList<>();
+    String query = "SELECT group_name FROM chat_group WHERE group_id = ?";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, groupId);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            groupNames.add(rs.getString("group_name"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return groupNames;
+}
 
+public List<String> getGroupNamesByMessageAndUser(int userId, String searchText) {
+    List<String> groupNames = new ArrayList<>();
+    String query = "SELECT DISTINCT g.group_name " +
+                   "FROM message m " +
+                   "JOIN chat_group g ON m.group_id = g.group_id " +
+                   "JOIN message_visibility mv ON m.message_id = mv.message_id " +
+                   "WHERE mv.user_id = ? AND mv.visible_status = 'existed' AND m.message LIKE ?";
+
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        stmt.setInt(1, userId);
+        stmt.setString(2, "%" + searchText + "%");
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            String groupName = rs.getString("group_name");
+            groupNames.add(groupName);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return groupNames;
+}
 
 }
