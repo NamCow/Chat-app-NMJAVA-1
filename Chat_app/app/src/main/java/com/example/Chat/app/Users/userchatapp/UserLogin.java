@@ -242,42 +242,67 @@ public class UserLogin extends javax.swing.JFrame {
         String userID = db.checkPassword(usernameOrEmail, password);
 
         if (userID != null) {
-            if (userID.equals("Account is locked")) {
-                JOptionPane.showMessageDialog(null, "Account is locked", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            } else {
-                // Log successful login into login_history table
-                try (
-                        PreparedStatement pstmt = conn != null ? conn.prepareStatement(
-                                "INSERT INTO login_history (user_id, login_at) VALUES (?, CURRENT_TIMESTAMP)") : null) {
-
-                    if (pstmt != null) {
-                        pstmt.setInt(1, Integer.parseInt(userID));
-                        pstmt.executeUpdate();
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Failed to log login attempt", "Error",
+                if (userID.equals("Account is locked")) {
+                    JOptionPane.showMessageDialog(null, "Account is locked", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    // Log successful login into login_history table
+                    try (
+                            PreparedStatement pstmt = conn != null ? conn.prepareStatement(
+                                    "INSERT INTO login_history (user_id, login_at) VALUES (?, CURRENT_TIMESTAMP)") : null;
+                            PreparedStatement updateStatusStmt = conn != null ? conn.prepareStatement(
+                                    "UPDATE users SET status = 'active' WHERE user_id = ?") : null) {
+            
+                        if (pstmt != null) {
+                            pstmt.setInt(1, Integer.parseInt(userID));
+                            pstmt.executeUpdate();
+                        }
+            
+                        // Update user status to 'active'
+                        if (updateStatusStmt != null) {
+                            updateStatusStmt.setInt(1, Integer.parseInt(userID));
+                            updateStatusStmt.executeUpdate();
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Failed to update user status", "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error logging login attempt: " + e.getMessage(), "Error",
                                 JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error logging login attempt: " + e.getMessage(), "Error",
-                            JOptionPane.ERROR_MESSAGE);
+            
+                    JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    java.awt.EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            UserUI userUI = new UserUI(userID, socket);
+                            userUI.setVisible(true);
+                            userUI.pack();
+                            userUI.setLocationRelativeTo(null);
+            
+                            // Add a WindowListener to update status to inactive on close
+                            userUI.addWindowListener(new java.awt.event.WindowAdapter() {
+                                @Override
+                                public void windowClosing(java.awt.event.WindowEvent e) {
+                                    try (
+                                            PreparedStatement updateStatusStmt = conn.prepareStatement(
+                                                    "UPDATE users SET status = 'inactive' WHERE user_id = ?")) {
+                                        updateStatusStmt.setInt(1, Integer.parseInt(userID));
+                                        updateStatusStmt.executeUpdate();
+                                    } catch (SQLException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                    e.getWindow().dispose(); // Close the window
+                                }
+                            });
+                        }
+                    });
+                    this.dispose();
                 }
-
-                JOptionPane.showMessageDialog(null, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
-                java.awt.EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        UserUI userUI = new UserUI(userID, socket);
-                        userUI.setVisible(true);
-                        userUI.pack();
-                        userUI.setLocationRelativeTo(null);
-                    }
-                });
-                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(null, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } else {
-            JOptionPane.showMessageDialog(null, "Login failed", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+            
     }
     // GEN-LAST:event_jButton1ActionPerformed
 
