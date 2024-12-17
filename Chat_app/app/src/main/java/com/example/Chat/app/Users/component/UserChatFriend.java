@@ -379,7 +379,7 @@ public class UserChatFriend extends javax.swing.JPanel {
                     if (rs.next()) {
                         int isChatWithUser = rs.getInt("is_chat_with_user");
                         if (isChatWithUser != 0) {
-                            JOptionPane.showMessageDialog(this, "You cannot delete member from a user group.", "Error",
+                            JOptionPane.showMessageDialog(this, "You cannot add member at a user group.", "Error",
                                     JOptionPane.ERROR_MESSAGE);
                             return; // Stop execution if it's a user group
                         }
@@ -405,7 +405,7 @@ public class UserChatFriend extends javax.swing.JPanel {
             frame.setVisible(true);
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error getting the member's delete panel: " + e.getMessage(), "Error",
+            JOptionPane.showMessageDialog(this, "Error getting the member's add panel: " + e.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

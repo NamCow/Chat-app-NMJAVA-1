@@ -88,7 +88,7 @@ public class AdminUI extends javax.swing.JFrame {
      * 
      * @return a Connection object or null if the connection fails
      */
-    private Connection setupConnection() {
+    public Connection setupConnection() {
         String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
         String DB_URL = "jdbc:mysql://localhost:3306/chat_app"; 
         String USER = "root";
@@ -1467,7 +1467,7 @@ public class AdminUI extends javax.swing.JFrame {
             }
         });
 
-        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name", "Activity number" }));
+        jComboBox10.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Name",  "Activity number < ", "Activity number = ", "Activity number > " }));
         jComboBox10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox10ActionPerformed(evt);
@@ -3098,7 +3098,7 @@ public class AdminUI extends javax.swing.JFrame {
             case "Name":
                 currentFilterQuery7 = "WHERE u.username LIKE '%" + filterValue + "%'";
                 break;
-            case "Number of Friends":
+            case "Number of friends":
                 try {
                     int numFriends = Integer.parseInt(filterValue); // Ensure the input is numeric
                     currentFilterQuery7 = "HAVING COUNT(uf.friend_id) = " + numFriends;

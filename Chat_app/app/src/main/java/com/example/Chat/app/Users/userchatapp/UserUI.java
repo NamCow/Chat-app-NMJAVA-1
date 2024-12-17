@@ -4,15 +4,6 @@
 */
 package com.example.Chat.app.Users.userchatapp;
 
-import java.util.List;
-
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import java.net.Socket;
 
@@ -24,7 +15,6 @@ public class UserUI extends javax.swing.JFrame {
     private String userID;
     private DatabaseConnection db;
     private Socket socket;
-    private String selectedGroupId = null;
     /**
      * Creates new form UserUI
      */
@@ -33,8 +23,6 @@ public class UserUI extends javax.swing.JFrame {
         this.socket = socket;
         db = DatabaseConnection.getInstance();
         initComponents();
-        addMouseListenerToList();
-        updateUserList();
         userInfor1.setId(userID);
         userFriend2.setId(userID);
         userFindFriend2.setId(userID, socket, userChatFriend2, jTabbedPane2);
@@ -54,31 +42,10 @@ public class UserUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
-        jTextField1 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
-        jPanel12 = new javax.swing.JPanel();
-        jPanel13 = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jTextField2 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jTextField3 = new javax.swing.JTextField();
-        jButton5 = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton6 = new javax.swing.JButton();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
+        userChatFriend2 = new com.example.Chat.app.Users.component.UserChatFriend();
         userFriend2 = new com.example.Chat.app.Users.component.UserFriend();
         userFindFriend2 = new com.example.Chat.app.Users.component.UserFindFriend();
         userInfor1 = new com.example.Chat.app.Users.component.UserInfor();
-        userChatFriend2 = new com.example.Chat.app.Users.component.UserChatFriend();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -100,195 +67,10 @@ public class UserUI extends javax.swing.JFrame {
         jPanel2.setPreferredSize(new java.awt.Dimension(280, 575));
 
         jTabbedPane2.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 2, 2, 2, new java.awt.Color(204, 102, 0)));
-
-        jPanel3.setBackground(new java.awt.Color(0, 102, 102));
-
-        jList1.setBackground(new java.awt.Color(244, 186, 129));
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Nam | Online | Friend", "Nghĩa | Online | Friend", "Hoàng | Offline | Friend", "Tom | Offline | Blocked" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane2.setViewportView(jList1);
-
-        jTextField1.setText("Text search");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
-            }
-        });
-
-        jButton2.setFont(new java.awt.Font("Helvetica Neue", 0, 8)); // NOI18N
-        jButton2.setText("Search");
-        jButton2.setPreferredSize(new java.awt.Dimension(60, 14));
-
-        jPanel12.setBackground(new java.awt.Color(244, 186, 129));
-
-        jPanel13.setBackground(new java.awt.Color(204, 102, 0));
-
-        jLabel5.setText("Username");
-
-        jLabel6.setForeground(new java.awt.Color(0, 204, 51));
-        jLabel6.setText("Online");
-
-        javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
-        jPanel13.setLayout(jPanel13Layout);
-        jPanel13Layout.setHorizontalGroup(
-            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel13Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel6)
-                .addContainerGap())
-        );
-        jPanel13Layout.setVerticalGroup(
-            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel13Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6))
-                .addContainerGap(11, Short.MAX_VALUE))
-        );
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Chào 7:30\n\t\t\t              Hi 7:45");
-        jScrollPane1.setViewportView(jTextArea1);
-
-        jTextField2.setText("Text chat");
-
-        jButton3.setText("Send");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jButton4.setText("Spam");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
-
-        jTextField3.setText("Search message");
-
-        jButton5.setText("Search");
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Delete message", "Delete history" }));
-
-        jButton6.setText("Delete");
-
-        jLabel9.setText("Chat");
-
-        jLabel10.setText("Search message");
-
-        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
-        jPanel12.setLayout(jPanel12Layout);
-        jPanel12Layout.setHorizontalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel12Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel12Layout.createSequentialGroup()
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel12Layout.createSequentialGroup()
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
-                                .addComponent(jButton5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jButton6)
-                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(jPanel12Layout.createSequentialGroup()
-                        .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 376, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel12Layout.createSequentialGroup()
-                                .addComponent(jLabel9)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel12Layout.createSequentialGroup()
-                                        .addComponent(jButton3)
-                                        .addGap(142, 142, 142)
-                                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jTextField2))))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel12Layout.setVerticalGroup(
-            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel12Layout.createSequentialGroup()
-                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton5)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton6)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        jLabel8.setText("Search message");
-        jLabel8.setMaximumSize(new java.awt.Dimension(50, 15));
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(jTextField1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addGap(12, 12, 12)
-                .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 461, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
-        jTabbedPane2.addTab("CHAT FRIENDS", jPanel3);
+        jTabbedPane2.addTab("CHAT", userChatFriend2);
         jTabbedPane2.addTab("FRIENDS", userFriend2);
         jTabbedPane2.addTab("FIND FRIENDS", userFindFriend2);
         jTabbedPane2.addTab("INFORMATION", userInfor1);
-        jTabbedPane2.addTab("CHAT", userChatFriend2);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -326,180 +108,8 @@ public class UserUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_jTextField1ActionPerformed
-
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_jButton4ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                       
-        if (selectedGroupId != null) {
-            int isChatWithUser = db.isChatWithUser(selectedGroupId);
-            
-            // Mở thẳng cửa sổ chat phù hợp
-            if (isChatWithUser == 1) {
-                // Mở chat cá nhân
-                openChatWindow(userID, selectedGroupId, socket);
-            } else if (isChatWithUser == 0) {
-                // Mở chat nhóm
-                openGroupChatWindow(userID, selectedGroupId, socket);
-            } else {
-                System.out.println("Không xác định kiểu chat cho group_id: " + selectedGroupId);
-            }
-        } else {
-            System.out.println("Không tìm thấy group_id cho username: " + selectedGroupId);
-        }
-    }
-
-    private void jTextField12ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField12ActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_jTextField12ActionPerformed
-
-    private void jTextField13ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField13ActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_jTextField13ActionPerformed
-
-    private void updateUserList() {
-        List<String> usernames = db.getGroupNamesByUserId(Integer.parseInt(userID));
-
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for (String username : usernames) {
-            model.addElement(username); // Thêm tên người dùng vào model
-        }
-        jList1.setModel(model); // Cập nhật JList với model mới
-    }
-    /* 
-    private void addMouseListenerToList() {
-        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 1) { // Kiểm tra số lần nhấp chuột
-                    String selectedUsername = jList1.getSelectedValue(); // Lấy tên người dùng được chọn
-                    if (selectedUsername != null) {
-                        // Lấy thông tin về group_id từ tên nhóm
-                        String groupId = db.getGroupIdByGroupName(selectedUsername);
-                        if (groupId != "-1") { // Kiểm tra nếu tìm thấy group_id
-                            // Kiểm tra nếu là nhóm chat cá nhân hay nhóm chat chung
-                            int isChatWithUser = db.isChatWithUser(groupId);
-                            if (isChatWithUser == 1) {
-                                // Nếu là chat cá nhân, mở cửa sổ ChatWindow
-                                openChatWindow(userID, groupId,socket);
-                            } else if (isChatWithUser == 0) {
-                                openGroupChatWindow(userID, groupId,socket);
-                            } else {
-                                System.out.println("Không xác định kiểu chat cho group_id: " + groupId);
-                            }
-                        } else {
-                            System.out.println("Không tìm thấy group_id cho username: " + selectedUsername);
-                        }
-                    }
-                }
-            }
-        });
-    }*/
-    private void addMouseListenerToList() {
-        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                String selectedUsername = jList1.getSelectedValue();
-                if (selectedUsername != null) {
-                    // Assuming Username is in the first column of the table
-                    String groupId = db.getGroupIdByGroupName(selectedUsername);
-                    if (!groupId.equals("-1")) {
-                        selectedGroupId = groupId;
-                    } else {
-                        selectedGroupId = null; 
-                    }
-                }
-            }
-        });
-    // jList1.addMouseListener(new java.awt.event.MouseAdapter() {
-    //     @Override
-    //     public void mouseClicked(java.awt.event.MouseEvent evt) {
-    //         if (evt.getClickCount() == 1) { // Kiểm tra số lần nhấp chuột
-    //             String selectedUsername = jList1.getSelectedValue(); // Lấy tên người dùng được chọn
-    //             if (selectedUsername != null) {
-    //                 // Lấy thông tin về group_id từ tên nhóm
-    //                 String groupId = db.getGroupIdByGroupName(selectedUsername);
-    //                 if (!groupId.equals("-1")) { // Kiểm tra nếu tìm thấy group_id
-    //                     // Kiểm tra nếu là nhóm chat cá nhân hay nhóm chat chung
-    //                     int isChatWithUser = db.isChatWithUser(groupId);
-                        
-    //                     // Hiển thị JPanel chứa các nút
-    //                     showActionPanel(isChatWithUser, userID, groupId, socket);
-                        
-    //                 } else {
-    //                     System.out.println("Không tìm thấy group_id cho username: " + selectedUsername);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // });
-}
-
-/*private void showActionPanel(int isChatWithUser, String userID, String groupId, Socket socket) {
-    // Tạo một JDialog để hiển thị JPanel
-    JDialog dialog = new JDialog();
-    dialog.setTitle("Actions");
-    dialog.setSize(300, 200);
-    dialog.setLocationRelativeTo(null); // Hiển thị ở giữa màn hình
-    dialog.setModal(true); // Chặn các hành động khác
-
-    // Tạo JPanel chứa các nút
-    JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     
-    // Nút Chat
-    JButton chatButton = new JButton("Chat");
-    chatButton.addActionListener(e -> {
-        if (isChatWithUser == 1) {
-            openChatWindow(userID, groupId, socket);
-        } else if (isChatWithUser == 0) {
-            openGroupChatWindow(userID, groupId, socket);
-        }
-        dialog.dispose();
-    });
-    panel.add(chatButton);
-    
-    // Nút Add Member (chỉ hiện với nhóm chat chung)
-    if (isChatWithUser == 0) {
-        JButton addMemberButton = new JButton("Add Member");
-        addMemberButton.addActionListener(e -> {
-            // Xử lý logic thêm thành viên vào nhóm chat
-            System.out.println("Thêm thành viên vào nhóm với groupId: " + groupId);
-            dialog.dispose();
-        });
-        panel.add(addMemberButton);
-    }
-    
-    // Nút Add Friend (chỉ hiện với chat cá nhân)
-    if (isChatWithUser == 1) {
-        JButton addFriendButton = new JButton("Add Friend");
-        addFriendButton.addActionListener(e -> {
-            // Xử lý logic thêm bạn bè
-            System.out.println("Thêm bạn với userID: " + userID);
-            dialog.dispose();
-        });
-        panel.add(addFriendButton);
-    }
 
-    // Thêm JPanel vào JDialog và hiển thị
-    dialog.add(panel);
-    dialog.setVisible(true);
-}
-*/
-
-    private void openGroupChatWindow(String userId, String groupId, Socket socket) {
-        ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
-        chatGroup.setVisible(true);
-    }
-    
-    // Phương thức để mở cửa sổ chat với người dùng đã chọn
-    private void openChatWindow(String senderId, String receiverId, Socket socket) {
-        ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
-        chatWindow.setVisible(true);
-    }
 
     /**
      * @param args the command line arguments
@@ -543,30 +153,9 @@ public class UserUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel12;
-    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane2;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
     private com.example.Chat.app.Users.component.UserChatFriend userChatFriend2;
     private com.example.Chat.app.Users.component.UserFindFriend userFindFriend2;
     private com.example.Chat.app.Users.component.UserFriend userFriend2;
