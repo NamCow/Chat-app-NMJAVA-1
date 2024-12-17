@@ -132,6 +132,7 @@ public class ChatWindow extends JFrame {
         searchPanel.add(new JLabel("Search:"));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
+        
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(messageField);
         bottomPanel.add(sendButton);

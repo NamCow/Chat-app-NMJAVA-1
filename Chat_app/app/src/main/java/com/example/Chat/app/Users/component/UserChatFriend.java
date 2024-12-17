@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
@@ -21,6 +22,9 @@ import com.example.Chat.app.Users.component.group.IsAdmin;
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import com.example.Chat.app.Users.component.chat.ChatGroup;
 import com.example.Chat.app.Users.component.chat.ChatWindow;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 // import com.example.Chat.app.Users.userchatapp.ChatWindow;
 // import com.example.Chat.app.Users.userchatapp.ChatGroup;
 
@@ -60,7 +64,16 @@ public class UserChatFriend extends javax.swing.JPanel {
         }
         jList1.setModel(model); // Cập nhật JList với model mới
     }
+    
+    public List<String> getGroupNamesByMessageAndUser(int userId, String message) {
+        List<Integer> groupIds = db.getGroupIdsByMessage(userId, message);
+        List<String> groupNames = new ArrayList<>();
 
+        for (int groupId : groupIds) {
+            groupNames.addAll(db.getGroupNamesByGroupId(groupId));
+        }
+        return groupNames;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -87,6 +100,7 @@ public class UserChatFriend extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
+        jButton4 = new javax.swing.JButton();
 
         jList1.setBackground(new java.awt.Color(244, 186, 129));
         jScrollPane2.setViewportView(jList1);
@@ -137,28 +151,24 @@ public class UserChatFriend extends javax.swing.JPanel {
                 jButton5ActionPerformed(evt);
             }
         });
-
         jButton6.setText("Delete Group Member");
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton6ActionPerformed(evt);
             }
         });
-
         jButton1.setText("Edit Group Admin");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         jButton7.setText("Edit Group Name");
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton7ActionPerformed(evt);
             }
         });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -212,10 +222,28 @@ public class UserChatFriend extends javax.swing.JPanel {
         jButton2.setText("Search");
         jButton2.setPreferredSize(new java.awt.Dimension(60, 14));
 
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchButtonActionPerformed(evt);
+            }
+        });
+
+
+
+
         jTextField1.setText("Text search");
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setFont(new java.awt.Font("Helvetica Neue", 0, 8)); // NOI18N
+        jButton4.setText("Cancel");
+        jButton4.setPreferredSize(new java.awt.Dimension(60, 14));
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
             }
         });
 
@@ -224,16 +252,17 @@ public class UserChatFriend extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jTextField1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jTextField1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -241,7 +270,9 @@ public class UserChatFriend extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -252,6 +283,10 @@ public class UserChatFriend extends javax.swing.JPanel {
             .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     private void addMouseListenerToList() {
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -283,9 +318,22 @@ public class UserChatFriend extends javax.swing.JPanel {
         setPanel(chatGroup); // Set ChatGroup in jPanel1
         // chatGroup.setVisible(true);
     }
+    private void openGroupChatWindowWithST(String userId, String groupId, Socket socket,String searchText) {
+        ChatGroup chatGroup = new ChatGroup(userId, groupId, socket);
+        chatGroup.highlightMessage(searchText);
+        setPanel(chatGroup); // Set ChatGroup in jPanel1
+        // chatGroup.setVisible(true);
+    }
 
     private void openChatWindow(String senderId, String receiverId, Socket socket) {
         ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
+        setPanel(chatWindow); // Set ChatWindow in jPanel1
+        //chatWindow.setVisible(true);
+    }
+
+    private void openChatWindowWithST(String senderId, String receiverId, Socket socket,String searchText) {
+        ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
+        chatWindow.highlightMessage(searchText);
         setPanel(chatWindow); // Set ChatWindow in jPanel1
         //chatWindow.setVisible(true);
     }
@@ -550,10 +598,69 @@ public class UserChatFriend extends javax.swing.JPanel {
         // TODO add your handling code here:
     }// GEN-LAST:event_jTextField1ActionPerformed
 
+
+
+
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        String searchText = jTextField1.getText();
+        if (searchText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter text to search.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    
+        List<String> groupNames = db.getGroupNamesByMessageAndUser(userId, searchText);
+        if (groupNames.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No messages found.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+    
+        DefaultListModel<String> model = new DefaultListModel<>();
+        for (String groupName : groupNames) {
+            model.addElement(groupName);
+        }
+        jList1.setModel(model);
+    
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                String selectedGroupName = jList1.getSelectedValue();
+                if (selectedGroupName != null) {
+                    String groupId = db.getGroupIdByGroupName(selectedGroupName);
+                    if (!groupId.equals("-1")) {
+                        selectedGroupId = groupId;
+                        openChatWindowOrGroupChat(searchText);
+                    }
+                }
+            }
+        });
+    }
+    private void openChatWindowOrGroupChat(String searchText) {
+        int isChatWithUser = db.isChatWithUser(selectedGroupId);
+        if (isChatWithUser == 1) {
+            String userID = Integer.toString(userId);
+            openChatWindowWithST( userID,  selectedGroupId,  socket, searchText);
+        } else if (isChatWithUser == 0) {
+            String userID = Integer.toString(userId);
+            openGroupChatWindowWithST(userID, selectedGroupId, socket,searchText);
+        }
+    }
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
+       /* 
+        // Đóng cửa sổ chat hiện tại
+        Window[] windows = Window.getWindows();
+        for (Window window : windows) {
+            if (window instanceof ChatWindow || window instanceof ChatGroup) {
+                window.dispose();
+            }
+        }
+        // Load lại danh sách nhóm
+        */
+        updateUserList();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;

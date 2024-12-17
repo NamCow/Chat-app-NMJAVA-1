@@ -14,7 +14,17 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+import java.awt.Color;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+
+
 import javax.swing.JOptionPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import com.example.Chat.app.Users.datastructure.Message;
@@ -190,6 +200,27 @@ public class ChatGroup extends javax.swing.JPanel {
         
     }
 
+    public void highlightMessage(String searchText) {
+        System.out.println("highlightMessage called with searchText: " + searchText);
+        String chatText = jTextArea1.getText();
+        int startIndex = chatText.indexOf(searchText);
+    
+        if (startIndex >= 0) {
+            int endIndex = startIndex + searchText.length();
+            Highlighter highlighter = jTextArea1.getHighlighter();
+            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+    
+            try {
+                highlighter.addHighlight(startIndex, endIndex, painter);
+                jTextArea1.setCaretPosition(startIndex);
+                System.out.println("Highlight added from " + startIndex + " to " + endIndex);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Text not found: " + searchText);
+        }
+    }
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         
     }
