@@ -27,7 +27,6 @@ dependencies {
     // This dependency is used by the application.
     implementation libs.guava
     implementation 'com.google.guava:guava:31.0.1-jre'
-    implementation files('/Users/lainam/Downloads/mysql-connector-j-9.1.0/mysql-connector-j-9.1.0.jar')
     implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
     implementation 'org.json:json:20210307'
     implementation 'io.socket:socket.io-client:2.0.1'
@@ -55,3 +54,24 @@ tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.example.Chat.app.Users.MainUser'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Include the configuration file in the release folder
+    doLast {
+        copy {
+            from("dbconfig.properties")
+            into("${buildDir}/libs")
+        }
+    }
+}
+

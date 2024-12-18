@@ -23,6 +23,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -89,15 +91,26 @@ public class AdminUI extends javax.swing.JFrame {
      * @return a Connection object or null if the connection fails
      */
     public Connection setupConnection() {
-        String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-        String DB_URL = "jdbc:mysql://localhost:3306/chat_app"; 
-        String USER = "root";
-        String PASSWORD = "hoang123";
-        try {
+        String configFilePath = "dbconfig.properties"; // Path to the configuration file
+        Properties props = new Properties();
+
+        try (FileInputStream fis = new FileInputStream(configFilePath)) {
+            // Load properties from the file
+            props.load(fis);
+            
+            String JDBC_DRIVER = props.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver");
+            String DB_URL = props.getProperty("db.url", "jdbc:mysql://localhost:3306/chat_app");
+            String USER = props.getProperty("db.user", "root");
+            String PASSWORD = props.getProperty("db.password", "hoang123");
+
             // Load JDBC driver
             Class.forName(JDBC_DRIVER);
+
             // Establish connection
             return DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error reading config file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "JDBC Driver not found: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -2133,12 +2146,25 @@ public class AdminUI extends javax.swing.JFrame {
             if (conn == null) return;
     
             // Query to get friends for the selected user
-            String query = "SELECT uf.friend_id, u.username, uf.friendship " +
-                           "FROM users_friend uf " +
-                           "JOIN users u ON uf.friend_id = u.user_id " +
-                           "WHERE uf.user_id = ?";
+            String query = """
+                            SELECT 
+                                CASE 
+                                    WHEN uf.user_id = ? THEN uf.friend_id 
+                                    ELSE uf.user_id 
+                                END AS friend_id,
+                                u.username,
+                                uf.friendship
+                            FROM users_friend uf
+                            JOIN users u ON 
+                                (uf.user_id = u.user_id AND uf.friend_id = ?)
+                                OR (uf.friend_id = u.user_id AND uf.user_id = ?)
+                            WHERE uf.friendship = 'friends'
+                        """;
+    
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
                 pstmt.setInt(1, selectedUserId);
+                pstmt.setInt(2, selectedUserId);
+                pstmt.setInt(3, selectedUserId);
     
                 try (ResultSet rs = pstmt.executeQuery()) {
                     // Prepare data for JTable
@@ -2173,7 +2199,8 @@ public class AdminUI extends javax.swing.JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error fetching friend list: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }                                         
+    }
+                              
 
     private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
         if (selectedUserId == -1) {

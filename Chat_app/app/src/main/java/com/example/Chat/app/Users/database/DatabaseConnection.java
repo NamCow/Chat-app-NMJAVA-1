@@ -1,5 +1,7 @@
 package com.example.Chat.app.Users.database;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -7,6 +9,7 @@ import java.time.LocalDateTime;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.JOptionPane;
@@ -14,19 +17,42 @@ import com.example.Chat.app.Users.datastructure.Message;
 import java.sql.Statement;
 
 public class DatabaseConnection {
-    private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/chat_app?zeroDateTimeBehavior=CONVERT_TO_NULL";
-    private static final String USER = "admin";
-    private static final String PASSWORD = "Phuongnam2312";
     private static Connection connect;
     private static DatabaseConnection instance;
 
+    // Path to the configuration file
+    private static final String CONFIG_FILE = "dbconfig.properties";
+
+    /**
+     * Reads the database connection properties from a file and establishes the connection.
+     * 
+     * @return Connection object or null if the connection fails
+     */
     public static Connection getConnection() {
         try {
             if (connect == null || connect.isClosed()) {
+                // Load properties from the configuration file
+                Properties properties = new Properties();
+                try (FileInputStream input = new FileInputStream(CONFIG_FILE)) {
+                    properties.load(input);
+                }
+
+                // Get database properties
+                String JDBC_DRIVER = properties.getProperty("db.driver", "com.mysql.cj.jdbc.Driver");
+                String DB_URL = properties.getProperty("db.url", "jdbc:mysql://localhost:3306/chat_app");
+                String USER = properties.getProperty("db.user", "admin");
+                String PASSWORD = properties.getProperty("db.password", "Phuongnam2312");
+
+                // Load the JDBC driver
                 Class.forName(JDBC_DRIVER);
+
+                // Establish the database connection
                 connect = DriverManager.getConnection(DB_URL, USER, PASSWORD);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error reading configuration file: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "JDBC Driver not found: " + e.getMessage(), "Error",
@@ -39,14 +65,11 @@ public class DatabaseConnection {
         return connect;
     }
 
-    public Connection getConnect() {
-        return getConnection();
-    }
-
-    public void setConnect(Connection connect) {
-        DatabaseConnection.connect = connect;
-    }
-
+    /**
+     * Returns the singleton instance of the DatabaseConnection class.
+     * 
+     * @return DatabaseConnection instance
+     */
     public static DatabaseConnection getInstance() {
         if (instance == null) {
             synchronized (DatabaseConnection.class) {
@@ -56,6 +79,15 @@ public class DatabaseConnection {
             }
         }
         return instance;
+    }
+
+    // Optional getters and setters
+    public Connection getConnect() {
+        return getConnection();
+    }
+
+    public void setConnect(Connection connect) {
+        DatabaseConnection.connect = connect;
     }
 
     public String checkPassword(String usernameOrEmail, String password) {
