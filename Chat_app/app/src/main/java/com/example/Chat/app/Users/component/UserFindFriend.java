@@ -20,7 +20,6 @@ import com.example.Chat.app.Users.component.chat.ChatWindow;;
 
 /**
  *
- * @author ASUS
  */
 public class UserFindFriend extends javax.swing.JPanel {
     private int userId = -1;

@@ -24,7 +24,6 @@ import jakarta.mail.internet.MimeMessage;
 
 /**
  *
- * @author ASUS
  */
 public class UserInfor extends javax.swing.JPanel {
     private int userId;

@@ -7,9 +7,12 @@ package com.example.Chat.app.Users.userchatapp;
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import java.net.Socket;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 /**
  *
- * @author lainam
+
  */
 public class UserUI extends javax.swing.JFrame {
     private String userID;
@@ -27,6 +30,7 @@ public class UserUI extends javax.swing.JFrame {
         userFriend2.setId(userID);
         userFindFriend2.setId(userID, socket, userChatFriend2, jTabbedPane2);
         userChatFriend2.setId(userID, socket);
+        addTabChangeListener();
     }
 
     /**
@@ -150,6 +154,16 @@ public class UserUI extends javax.swing.JFrame {
          * }
          * });
          */
+    }
+    private void addTabChangeListener() {
+        jTabbedPane2.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (jTabbedPane2.getSelectedComponent() == userChatFriend2) {
+                    userChatFriend2.updateUserList();
+                }
+            }
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

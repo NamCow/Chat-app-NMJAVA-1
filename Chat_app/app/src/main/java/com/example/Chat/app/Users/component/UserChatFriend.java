@@ -32,7 +32,6 @@ import javax.swing.text.Highlighter;
 
 /**
  *
- * @author ASUS
  */
 public class UserChatFriend extends javax.swing.JPanel {
     private int userId;
@@ -57,7 +56,7 @@ public class UserChatFriend extends javax.swing.JPanel {
         addMouseListenerToList();
     }
 
-    private void updateUserList() {
+    public void updateUserList() {
         List<String> usernames = db.getGroupNamesByUserId(userId);
 
         DefaultListModel<String> model = new DefaultListModel<>();

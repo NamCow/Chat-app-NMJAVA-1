@@ -11,10 +11,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
 
-/**
- *
- * @author ASUS
- */
+
 public class UserFriend extends javax.swing.JPanel {
     private int userId;
     private String selectedUsername;//Table 1 Friend List
