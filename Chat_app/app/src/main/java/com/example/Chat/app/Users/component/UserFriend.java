@@ -19,6 +19,7 @@ public class UserFriend extends javax.swing.JPanel {
     private int userId;
     private String selectedUsername;//Table 1 Friend List
     private String selectedUsername2;//Table 2 Friend Request
+    private UserChatFriend UserChatFriend;
 
     private String currentFilterQuery1 = ""; // Stores the current WHERE clause
     private String currentFilterQuery2 = ""; // Stores the current WHERE clause
@@ -31,10 +32,11 @@ public class UserFriend extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setId(String userId) {
+    public void setId(String userId, UserChatFriend UserChatFriend) {
         this.userId = Integer.parseInt(userId);
         loadDataTable1();
         loadDataTable2();
+        this.UserChatFriend = UserChatFriend;
     }
 
     private void loadDataTable1() {
@@ -636,6 +638,7 @@ public class UserFriend extends javax.swing.JPanel {
     
             JOptionPane.showMessageDialog(this, "Group created successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadDataTable1(); // Refresh table to reflect the new group
+            UserChatFriend.updateUserList();
         } catch (SQLException e) {
             try {
                 if (conn != null) {

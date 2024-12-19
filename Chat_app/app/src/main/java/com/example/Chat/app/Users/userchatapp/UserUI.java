@@ -4,6 +4,7 @@
 */
 package com.example.Chat.app.Users.userchatapp;
 
+import com.example.Chat.app.Users.component.UserChatFriend;
 import com.example.Chat.app.Users.database.DatabaseConnection;
 import java.net.Socket;
 
@@ -24,7 +25,7 @@ public class UserUI extends javax.swing.JFrame {
         db = DatabaseConnection.getInstance();
         initComponents();
         userInfor1.setId(userID);
-        userFriend2.setId(userID);
+        userFriend2.setId(userID, userChatFriend2);
         userFindFriend2.setId(userID, socket, userChatFriend2, jTabbedPane2);
         userChatFriend2.setId(userID, socket);
     }
