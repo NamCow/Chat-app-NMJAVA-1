@@ -212,21 +212,30 @@ public class AdminUI extends javax.swing.JFrame {
     }
     
     private void loadDataTable7() {
-        // Base query with placeholders for WHERE and HAVING clauses
+        // Base query with placeholders for WHERE, HAVING, and ORDER BY clauses
         String query = """
             SELECT 
                 u.username, 
-                COUNT(uf.friend_id) AS num_user_friends,
-                COALESCE(SUM((SELECT COUNT(*) 
-                              FROM users_friend uf2 
-                              WHERE uf2.user_id = uf.friend_id)), 0) AS num_friends_of_friends
+                COUNT(DISTINCT CASE 
+                                WHEN uf.user_id = u.user_id THEN uf.friend_id 
+                                ELSE uf.user_id 
+                            END) AS num_user_friends,
+                COUNT(DISTINCT fof.friend_id) AS num_friends_of_friends
             FROM 
                 users u
             LEFT JOIN 
-                users_friend uf ON u.user_id = uf.user_id
+                users_friend uf ON (uf.user_id = u.user_id OR uf.friend_id = u.user_id) AND uf.friendship = 'friends'
+            LEFT JOIN (
+                SELECT 
+                    uf1.user_id AS friend_id
+                FROM 
+                    users_friend uf1
+                WHERE 
+                    uf1.friendship = 'friends'
+            ) fof ON fof.friend_id = u.user_id
             """;
     
-        // Append the WHERE clause if a filter is applied to columns from the users table
+        // Append WHERE clause if a filter is applied to columns from the users table
         if (currentFilterQuery7.startsWith("WHERE")) {
             query += " " + currentFilterQuery7;
         }
@@ -234,12 +243,12 @@ public class AdminUI extends javax.swing.JFrame {
         // Add GROUP BY clause
         query += " GROUP BY u.user_id, u.username";
     
-        // Append the HAVING clause if a filter is applied to aggregated data
+        // Append HAVING clause if a filter is applied to aggregated data
         if (currentFilterQuery7.startsWith("HAVING")) {
             query += " " + currentFilterQuery7;
         }
     
-        // Append the ORDER BY clause if sorting is applied
+        // Append ORDER BY clause if sorting is applied
         if (!currentSortQuery7.isEmpty()) {
             query += " " + currentSortQuery7;
         }
@@ -273,6 +282,7 @@ public class AdminUI extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
     
     private void loadDataTable3() {
         // Base SQL query to fetch the sign-up list
@@ -3128,7 +3138,7 @@ public class AdminUI extends javax.swing.JFrame {
             case "Number of friends":
                 try {
                     int numFriends = Integer.parseInt(filterValue); // Ensure the input is numeric
-                    currentFilterQuery7 = "HAVING COUNT(uf.friend_id) = " + numFriends;
+                    currentFilterQuery7 = "HAVING COUNT(DISTINCT CASE WHEN uf.user_id = u.user_id THEN uf.friend_id ELSE uf.user_id END) = " + numFriends;
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(this, "Please enter a valid number for the number of friends.", "Invalid Input", JOptionPane.WARNING_MESSAGE);
                     return;
