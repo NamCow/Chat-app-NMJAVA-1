@@ -32,7 +32,7 @@ public class UserFriend extends javax.swing.JPanel {
         loadDataTable2();
     }
 
-    private void loadDataTable1() {
+    public void loadDataTable1() {
        
         String query = """
                 SELECT u.username,
@@ -100,7 +100,7 @@ public class UserFriend extends javax.swing.JPanel {
     }
     
 
-    private void loadDataTable2() {
+    public void loadDataTable2() {
         // Query to fetch friends with the specified conditions
         String query = """
                     SELECT u.username,u.fullname
