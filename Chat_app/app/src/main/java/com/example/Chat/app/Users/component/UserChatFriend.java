@@ -32,7 +32,6 @@ import javax.swing.text.Highlighter;
 
 /**
  *
- * @author ASUS
  */
 public class UserChatFriend extends javax.swing.JPanel {
     private int userId;

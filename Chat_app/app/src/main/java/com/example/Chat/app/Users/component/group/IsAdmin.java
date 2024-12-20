@@ -14,10 +14,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
 
-/**
- *
- * @author ASUS
- */
+
 public class IsAdmin extends javax.swing.JPanel {
     private int userId = -1;
     private String groupId = null;

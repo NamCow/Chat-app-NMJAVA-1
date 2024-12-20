@@ -27,6 +27,8 @@ public class MainUser extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new UserLogin().setVisible(true);
+                new UserLogin().setVisible(true);
+                new UserLogin().setVisible(true);
                 dispose(); 
             }
         });

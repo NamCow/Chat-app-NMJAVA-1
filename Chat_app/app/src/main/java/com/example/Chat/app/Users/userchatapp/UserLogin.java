@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author lainam
+
  */
 public class UserLogin extends javax.swing.JFrame {
 

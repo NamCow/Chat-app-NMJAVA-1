@@ -14,10 +14,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.example.Chat.app.Users.database.DatabaseConnection;
 
-/**
- *
- * @author ASUS
- */
+
 public class DeleteMember extends javax.swing.JPanel {
     private int userId = -1;
     private String groupId = null;
@@ -217,12 +214,9 @@ public class DeleteMember extends javax.swing.JPanel {
         return false; // Default to non-admin if role check fails
     }
     
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+   
     private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
-    // End of variables declaration//GEN-END:variables
 }

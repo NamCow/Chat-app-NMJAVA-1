@@ -37,7 +37,6 @@ import jakarta.mail.internet.MimeMessage;
 
 /**
  *
- * @author ASUS
  */
 public class AdminUI extends javax.swing.JFrame {
 
