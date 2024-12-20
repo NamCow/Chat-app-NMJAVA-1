@@ -9,6 +9,8 @@ import java.net.Socket;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  *
@@ -32,6 +34,14 @@ public class UserUI extends javax.swing.JFrame {
         userChatFriend2.setId(userID, socket);
         addTabChangeListener();
         addTabChangeListener1();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                DatabaseConnection db = DatabaseConnection.getInstance();
+                db.updateAllUsersStatusToInactive();
+                System.exit(0);
+            }
+        });
     }
 
     /**

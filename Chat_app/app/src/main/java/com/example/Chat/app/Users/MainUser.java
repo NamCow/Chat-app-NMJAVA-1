@@ -3,12 +3,14 @@ package com.example.Chat.app.Users;
 
 import com.example.Chat.app.Users.userchatapp.UserSignup;
 import com.example.Chat.app.Users.chatservice.Server;
+import com.example.Chat.app.Users.database.DatabaseConnection;
 import com.example.Chat.app.Users.userchatapp.UserLogin;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 public class MainUser extends JFrame {
 
     public MainUser() {
@@ -29,6 +31,7 @@ public class MainUser extends JFrame {
                 new UserLogin().setVisible(true);
                 new UserLogin().setVisible(true);
                 new UserLogin().setVisible(true);
+                //new UserLogin().setVisible(true);
                 dispose(); 
             }
         });
@@ -41,14 +44,23 @@ public class MainUser extends JFrame {
             }
         });
         
-
+        
         // Set up the layout
         JPanel panel = new JPanel();
         panel.add(userButtonLogin);
         panel.add(userButtonSignup);
         add(panel);
+       /*  addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                DatabaseConnection db = DatabaseConnection.getInstance();
+                db.updateAllUsersStatusToInactive();
+                System.exit(0);
+            }
+        });*/
     }
-
+    
+    
     public static void main(String[] args) {
         new Thread(new Runnable() {
             @Override

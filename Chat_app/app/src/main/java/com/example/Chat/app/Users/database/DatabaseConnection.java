@@ -21,7 +21,7 @@ public class DatabaseConnection {
     private static DatabaseConnection instance;
 
     // Path to the configuration file
-    private static final String CONFIG_FILE = "/Users/lainam/Downloads/.jar file/dbconfig.properties";
+    private static final String CONFIG_FILE = "dbconfig.properties";
 
     /**
      * Reads the database connection properties from a file and establishes the connection.
@@ -636,5 +636,13 @@ public List<String> getGroupNamesByMessageAndUser(int userId, String searchText)
     }
     return groupNames;
 }
-
+public void updateAllUsersStatusToInactive() {
+    String query = "UPDATE users SET status = 'inactive'";
+    try (PreparedStatement stmt = connect.prepareStatement(query)) {
+        int rowsUpdated = stmt.executeUpdate();
+        System.out.println("Rows updated: " + rowsUpdated);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
 }

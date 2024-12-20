@@ -211,10 +211,10 @@ public class UserFindFriend extends javax.swing.JPanel {
         String query;
         switch (filterOption) {
             case "FullName":
-                query = "SELECT username, fullname FROM users WHERE fullname LIKE ? AND user_id != ?";
+                query = "SELECT user_id, username, fullname FROM users WHERE fullname LIKE ? AND user_id != ?";
                 break;
             case "Username":
-                query = "SELECT username, fullname FROM users WHERE username LIKE ? AND user_id != ?";
+                query = "SELECT user_id, username, fullname FROM users WHERE username LIKE ? AND user_id != ?";
                 break;
             default:
                 JOptionPane.showMessageDialog(this, "Invalid filter option selected.", "Error",
@@ -242,9 +242,12 @@ public class UserFindFriend extends javax.swing.JPanel {
 
                 // Populate the table with the search results
                 while (rs.next()) {
+                    int foundUserId = rs.getInt("user_id");
                     String username = rs.getString("username");
                     String fullname = rs.getString("fullname");
-                    model.addRow(new Object[] { username, fullname });
+                    if (!isUserBlocked(userId, foundUserId)) {
+                        model.addRow(new Object[] { username, fullname });
+                    }
                 }
 
                 if (model.getRowCount() == 0) {
@@ -258,7 +261,25 @@ public class UserFindFriend extends javax.swing.JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    private boolean isUserBlocked(int userId, int foundUserId) {
+        String checkBlockedQuery = "SELECT friendship FROM users_friend WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(checkBlockedQuery)) {
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, foundUserId);
+            pstmt.setInt(3, foundUserId);
+            pstmt.setInt(4, userId);
+    
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String friendship = rs.getString("friendship");
+                    return "blocked".equals(friendship);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
         // Check if userId is set
         if (userId == -1) {
