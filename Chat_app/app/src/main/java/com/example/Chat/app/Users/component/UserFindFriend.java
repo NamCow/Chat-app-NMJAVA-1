@@ -341,6 +341,7 @@ public class UserFindFriend extends javax.swing.JPanel {
 
     // Socket for chat
     private void openChatWindow(String senderId, String receiverId, Socket socket) {
+        userChatFriend.updateUserList();
         ChatWindow chatWindow = new ChatWindow(senderId, receiverId, socket);
         userChatFriend.setPanel(chatWindow); // Switch to UserChatFriend's JPanel1
     
