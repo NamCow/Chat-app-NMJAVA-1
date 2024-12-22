@@ -21,7 +21,7 @@ public class DatabaseConnection {
     private static DatabaseConnection instance;
 
     // Path to the configuration file
-    private static final String CONFIG_FILE = "/Users/lainam/Downloads/.jar file/dbconfig.properties";
+    private static final String CONFIG_FILE = "src/main/java/com/example/Chat/app/dbconfig.properties";
 
     /**
      * Reads the database connection properties from a file and establishes the connection.

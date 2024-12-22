@@ -90,7 +90,7 @@ public class AdminUI extends javax.swing.JFrame {
      * @return a Connection object or null if the connection fails
      */
     public Connection setupConnection() {
-        String configFilePath = "dbconfig.properties"; // Path to the configuration file
+        String configFilePath = "src/main/java/com/example/Chat/app/dbconfig.properties"; // Path to the configuration file
         Properties props = new Properties();
 
         try (FileInputStream fis = new FileInputStream(configFilePath)) {
